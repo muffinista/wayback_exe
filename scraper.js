@@ -7,6 +7,9 @@ var request = require('request');
 
 var queue = require('./queue.js');
 
+var re = /\/web\/[\d]+\//;
+
+
 //var domains = JSON.parse(fs.readFileSync('sources.json'));
 //console.log(domains);
 
@@ -76,13 +79,10 @@ var parseAndClean = function(contents) {
 
 var urlsToScrape = function(contents) {
     var $ = parseAndClean(contents);
-    var re = /\/web\/[\d]+\//;
     return _.select(
         $('body').find("a").map(function(i, a) {
             // grab the href from any links. the replace here should strip /web/timestamp/
-            //var timestamp = a.attribs.href.match(re)[0];
             var href = a.attribs.href.replace(re, "");
-            //console.log(timestamp, href);
             return href;
         }),
         function(url) {
@@ -101,14 +101,31 @@ var dataToUrl = function(obj) {
 
 var default_timestamp = "19950101";
 
-var validPage = function(c) {
-    return c.indexOf('<p class="code">Redirecting to...</p>') === -1 &&
-        c.indexOf('<p>Wayback Machine doesn&apos;t have that page archived.</p>') === -1;
+var invalidPage = function(c) {
+    return c.indexOf('<p class="code">Redirecting to...</p>') > -1 ||
+        c.indexOf('<p>Wayback Machine doesn&apos;t have that page archived.</p>') > -1;
+};
+
+var findRedirect = function(c) {
+    var result = undefined;
+    if ( c.indexOf('<p class="code">Redirecting to...</p>') > 0 ) {
+        var $ = cheerio.load(c);
+        result = $(".impatient a").get(0).attribs.href;
+        result = result.replace(re, "");
+    }
+    return result;
 };
 
 var min_score = 0;
 
 var score = function(body) {
+
+// Scraper scoring
+// Number of buzzwords
+// Number of images
+// Number of tags
+
+
     return 1;
 };
 
@@ -124,8 +141,14 @@ var scrape = function(u) {
         scrapeUrl(u, default_timestamp, function(body) {
             //queue.mark(u);
 
-            if ( ! validPage(body) ) {
+            if ( invalidPage(body) ) {
                 console.log("looks like " + u + "didn't return a 200, bye");
+                var r = findRedirect(body);
+                if ( typeof(r) !== "undefined" ) {
+                    console.log("let's scrape redirect " + r + " + at some point");
+                    queue.add([r]);
+                }
+
                 return;
             }
 
