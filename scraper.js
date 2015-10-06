@@ -134,6 +134,8 @@ var score = function(url, body) {
     var images = $("img").length;
     var tildes = (url.indexOf("~") !== -1) ? 100 : 0;
 
+    console.log("tags: " + tags + " images: " + images + " tildes: " + tildes);
+
     return tags + images + tildes;
 };
 
@@ -165,8 +167,9 @@ var scrape = function(u) {
                 console.log("score: " + page_score + " looks good, let's store it");
                 var urls = urlsToScrape(body);
                 console.log(urls);
-                queue.add(urls);
-
+                if ( urls.length > 0 ) {
+                    queue.add(urls);
+                }
 
                 var p = require('./pages.js');
                 p.add({
