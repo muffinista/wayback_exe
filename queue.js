@@ -4,8 +4,11 @@ var _ = require('lodash');
 var redis = require("redis");
 var queue = "scraper_queue";
 
+var fs = require('fs');
+var conf = JSON.parse(fs.readFileSync('conf.json'));
+
 var add = function(url) {
-    var client = redis.createClient();
+    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.on("error", function (err) {
         console.log("Error " + err);
     });
