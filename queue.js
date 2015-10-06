@@ -25,13 +25,13 @@ var get = function(cb) {
     });
 
     client.lrange(queue, -1000, 1000, function(err, replies) {
-        console.log(replies);
-        console.log(replies.length);
-        console.log(replies[0]);
+        //console.log(replies);
+        //console.log(replies.length);
+        //console.log(replies[0]);
 
         var url = _.sample(replies);
 
-        client.lrem(queue, -100, url);
+        client.lrem(queue, 0, url);
 
         client.quit();
 
@@ -48,8 +48,8 @@ var peek = function() {
     });
 
     client.lrange(queue, -1000, 1000, function(err, replies) {
-        console.log("*****", replies.length);
         console.log(replies);
+        console.log("*****", replies.length);
 
         client.quit();
     });
