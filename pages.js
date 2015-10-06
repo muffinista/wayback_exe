@@ -1,7 +1,7 @@
 "use strict";
 var mysql = require('mysql');
-var fs = require('fs');
 
+var fs = require('fs');
 var conf = JSON.parse(fs.readFileSync('conf.json'));
 
 var add = function(opts) {
