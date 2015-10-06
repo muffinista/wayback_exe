@@ -63,6 +63,11 @@ var scrapeUrl = function(url, timestamp, cb) {
     var target = "http://web.archive.org/web/" + timestamp + "/" + url;
     console.log(target);
     request(target, function (error, response, body) {
+        if ( error || response.statusCode !== 200 ) {
+            console.log(error);
+            console.log(response.statusCode);           
+        }
+
         if (!error && response.statusCode == 200) {
             console.log(body);
             console.log("got response, send it along");
@@ -118,15 +123,18 @@ var findRedirect = function(c) {
 
 var min_score = 0;
 
-var score = function(body) {
+var score = function(url, body) {
 
-// Scraper scoring
-// Number of buzzwords
-// Number of images
-// Number of tags
+    // Scraper scoring
+    // Number of buzzwords
+    // Number of images
+    // Number of tags
+    var $ = cheerio.load(body);    
+    var tags = $("*").length;
+    var images = $("img").length;
+    var tildes = (url.indexOf("~") !== -1) ? 100 : 0;
 
-
-    return 1;
+    return tags + images + tildes;
 };
 
 var scrape = function(u) {
@@ -151,11 +159,21 @@ var scrape = function(u) {
 
                 return;
             }
-
-            if ( score(body) > min_score ) {
+            
+            var page_score = score(u, body);
+            if ( page_score > min_score ) {
+                console.log("score: " + page_score + " looks good, let's store it");
                 var urls = urlsToScrape(body);
                 console.log(urls);
                 queue.add(urls);
+
+
+                var p = require('./pages.js');
+                p.add({
+                    url: u,
+                    body: body,
+                    score: page_score                   
+                });
             }
         });
     });

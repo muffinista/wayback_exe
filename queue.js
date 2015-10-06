@@ -61,9 +61,8 @@ var runOnce = function(u, cb) {
     var client = redis.createClient();
     client.get(u, function(err, reply) {
         // reply is null when the key is missing
-        console.log("*********", reply);
         if ( reply === null ) {
-            client.set(u, "1");
+            //client.set(u, "1");
             cb();
         }
     });
