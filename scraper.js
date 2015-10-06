@@ -166,7 +166,7 @@ var scrape = function(u) {
             if ( page_score > min_score ) {
                 console.log("score: " + page_score + " looks good, let's store it");
                 var urls = urlsToScrape(body);
-                console.log(urls);
+                //console.log(urls);
                 if ( urls.length > 0 ) {
                     queue.add(urls);
                 }
