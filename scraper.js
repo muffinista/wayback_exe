@@ -87,7 +87,14 @@ var urlsToScrape = function(contents) {
     return _.select(
         $('body').find("a").map(function(i, a) {
             // grab the href from any links. the replace here should strip /web/timestamp/
-            var href = a.attribs.href.replace(re, "");
+            var href;
+            if ( a.atribs.href ) {
+                href = a.attribs.href.replace(re, "");
+            }
+            else {
+                href = undefined;
+            }
+            
             return href;
         }),
         function(url) {
