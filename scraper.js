@@ -108,13 +108,24 @@ var default_timestamp = "19950101";
 
 var invalidPage = function(c) {
     return c.indexOf('<p class="code">Redirecting to...</p>') > -1 ||
-        c.indexOf('<p>Wayback Machine doesn&apos;t have that page archived.</p>') > -1;
+        c.indexOf('<p>Wayback Machine doesn&apos;t have that page archived.</p>') > -1 ||
+        c.indexOf('HTTP-EQUIV="REFRESH"') > -1;
 };
 
 var findRedirect = function(c) {
     var result = undefined;
+
+    var $ = cheerio.load(c);
+
+    var meta = $("meta[http-equiv]");
+    if ( meta.length > 0 ) {
+        console.log("**** " + meta.get(0).attribs.content);
+        console.log("**** " + meta.get(0).attribs.content.split(/;url=/i)[1]);
+        var dest = meta.get(0).attribs.content.split(/;url=/i)[1].replace(re, "");
+        return dest;
+    }
+
     if ( c.indexOf('<p class="code">Redirecting to...</p>') > 0 ) {
-        var $ = cheerio.load(c);
         result = $(".impatient a").get(0).attribs.href;
         result = result.replace(re, "");
     }
