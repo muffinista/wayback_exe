@@ -36,7 +36,7 @@ var findMatchingUrls = function(url, cb) {
 
     console.log(scrape_url);
     request(scrape_url, function (error, response, body) {
-        console.log(body);
+        //console.log(body);
         if (!error && response.statusCode == 200) {
             var data = JSON.parse(body);
             var keys = data.shift();
@@ -51,8 +51,8 @@ var findMatchingUrls = function(url, cb) {
                     return ( obj.original.indexOf('_vti') === -1 );
                 }
             );
-
-            console.log(objects);
+            
+            //console.log(objects);
 
             cb(objects);
         }
@@ -69,7 +69,7 @@ var scrapeUrl = function(url, timestamp, cb) {
         }
 
         if (!error && response.statusCode == 200) {
-            console.log(body);
+            //console.log(body);
             console.log("got response, send it along");
             cb(body);
         }
@@ -126,8 +126,8 @@ var findRedirect = function(c) {
 
     var meta = $("meta[http-equiv]");
     if ( meta.length > 0 ) {
-        console.log("**** " + meta.get(0).attribs.content);
-        console.log("**** " + meta.get(0).attribs.content.split(/;url=/i)[1]);
+        //console.log("**** " + meta.get(0).attribs.content);
+        //console.log("**** " + meta.get(0).attribs.content.split(/;url=/i)[1]);
         var dest = meta.get(0).attribs.content.split(/;url=/i)[1].replace(re, "");
         return dest;
     }
@@ -185,8 +185,12 @@ var scrape = function(u) {
                 console.log("score: " + page_score + " looks good, let's store it");
                 var urls = urlsToScrape(body);
                 //console.log(urls);
+
                 if ( urls.length > 0 ) {
                     queue.add(urls);
+                }
+                else {
+                    console.log("ADD " + urls.length);
                 }
 
                 var p = require('./pages.js');
@@ -207,9 +211,19 @@ var run = function() {
     });
 };
 
+var loop = function() {
+    console.log("ok, running forever!");
+    var q = require('./queue.js');
+    setInterval(function() {
+        run();
+        q.peek();
+    }, 45000);
+};
+
 
 exports.findMatchingUrls = findMatchingUrls;
 exports.scrapeUrl = scrapeUrl;
 exports.urlsToScrape = urlsToScrape;
 exports.scrape = scrape;
 exports.run = run;
+exports.loop = loop;
