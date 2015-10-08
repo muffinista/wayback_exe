@@ -10,13 +10,6 @@ var url = require('url');
 
 var re = /\/web\/[\d]+\//;
 
-
-//var domains = JSON.parse(fs.readFileSync('sources.json'));
-//console.log(domains);
-
-//var base_url = _.sample(domains); //"tandy.com";
-//var match = _.sample(["prefix", "exact", "exact"]);
-
 /**
  * this returns URLS from the wayback machine archive which match the incoming URL
  */
@@ -66,7 +59,6 @@ var scrapeUrl = function(url, timestamp, cb) {
     request(target, function (error, response, body) {
         if ( error || response.statusCode !== 200 ) {
             console.log(error);
-            //console.log(response.statusCode);           
         }
 
         if (!error && response.statusCode == 200) {
@@ -82,6 +74,7 @@ var parseAndClean = function(contents) {
     $("#wm-ipp").remove();
     return $;
 };
+
 
 var urlsToScrape = function(contents, u) {
     var $ = parseAndClean(contents);
@@ -146,7 +139,7 @@ var findRedirect = function(c) {
     else if ( meta.length > 0 ) {
         console.log("**** " + meta.get(0).attribs.content);
         console.log("**** " + meta.get(0).attribs.content.split(/; +?url=/i)[1]);
-        var result =  meta.get(0).attribs.content.split(/; +?url=/i);
+        result =  meta.get(0).attribs.content.split(/; +?url=/i);
         if ( typeof(result) !== "undefined" && result.length > 0 ) {
             var dest = result[1].replace(re, "");
             return dest;
@@ -200,8 +193,8 @@ var scrape = function(u) {
             var page_score = score(u, body);
             if ( page_score > min_score ) {
                 console.log("score: " + page_score + " looks good, let's store it");
-
                 var urls = urlsToScrape(body, u);
+
                 //console.log(urls);
 
                 if ( urls.length > 0 ) {
@@ -234,7 +227,6 @@ var loop = function() {
     var q = require('./queue.js');
     setInterval(function() {
         run();
-        //q.peek();
     }, 15000);
 };
 
