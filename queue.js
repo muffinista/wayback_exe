@@ -3,28 +3,56 @@
 var _ = require('lodash');
 var redis = require("redis");
 var queue = "scraper_queue";
+var push_check = "push_check";
 
 var fs = require('fs');
 var conf = JSON.parse(fs.readFileSync('conf.json'));
 
-var add = function(url) {
+var addOnce = function(url) {
     var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.on("error", function (err) {
         console.log("Error " + err);
     });
+    console.log(url);
 
-    client.rpush(queue, url, redis.print);
-    client.quit();
+    // only add to the queue if we haven't already added it
+    client.hget(push_check, url, function(err, reply) {
+        // reply is null when the key is missing
+        if ( reply === null ) {
+            console.log("push " + url);
+            client.hset(push_check, url, "1");
+            client.rpush(queue, url, function() {
+                client.quit();
+            });
+        }
+        else {
+            console.log("already added " + url + ", skipping");
+            client.quit();
+        }
+    });
+};
 
+var add = function(urls) {
+    var url;
+
+    if ( typeof(urls) === "string" ) {
+        urls = [ urls ];
+    }
+
+    console.log("here with some urls");
+
+    for ( var i = 0; i < urls.length; i++ ) {
+        addOnce(urls[i]);
+    }
 };
 
 var get = function(cb) {
-    var client = redis.createClient();
+    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);   
     client.on("error", function (err) {
         console.log("Error " + err);
     });
 
-    client.lrange(queue, -1000, 1000, function(err, replies) {
+    client.lrange(queue, 0, 1000, function(err, replies) {
         //console.log(replies);
         //console.log(replies.length);
         //console.log(replies[0]);
@@ -35,19 +63,18 @@ var get = function(cb) {
 
         client.quit();
 
-
         cb(url);
     });
 
 };
 
 var peek = function() {
-    var client = redis.createClient();
+    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.on("error", function (err) {
         console.log("Error " + err);
     });
 
-    client.lrange(queue, -1000, 1000, function(err, replies) {
+    client.lrange(queue, 0, 1000, function(err, replies) {
         console.log(replies);
         console.log("*****", replies.length);
 
@@ -56,16 +83,16 @@ var peek = function() {
 };
 
 var mark = function(u) {
-    var client = redis.createClient();
+    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.set(u, "1");
 };
 
 var runOnce = function(u, cb) {
-    var client = redis.createClient();
+    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.get(u, function(err, reply) {
         // reply is null when the key is missing
         if ( reply === null ) {
-            //client.set(u, "1");
+            client.set(u, "1");
             cb();
         }
     });

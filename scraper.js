@@ -6,6 +6,7 @@ var cheerio = require('cheerio');
 var request = require('request');
 
 var queue = require('./queue.js');
+var url = require('url');
 
 var re = /\/web\/[\d]+\//;
 
@@ -65,7 +66,7 @@ var scrapeUrl = function(url, timestamp, cb) {
     request(target, function (error, response, body) {
         if ( error || response.statusCode !== 200 ) {
             console.log(error);
-            console.log(response.statusCode);           
+            //console.log(response.statusCode);           
         }
 
         if (!error && response.statusCode == 200) {
@@ -82,24 +83,37 @@ var parseAndClean = function(contents) {
     return $;
 };
 
-var urlsToScrape = function(contents) {
+var urlsToScrape = function(contents, u) {
     var $ = parseAndClean(contents);
-    return _.select(
-        $('body').find("a").map(function(i, a) {
-            // grab the href from any links. the replace here should strip /web/timestamp/
-            var href;
-            if ( a.attribs && a.attribs.href ) {
-                href = a.attribs.href.replace(re, "");
-            }
-            else {
-                href = undefined;
-            }
-            
-            return href;
-        }),
-        function(url) {
-            return typeof(url) !== "undefined" && url.indexOf('http') !== -1 && url.indexOf('_vti') === -1 && url.length > 1;
-        });
+    if ( typeof(u) == "undefined" ) {
+        u = "";
+    }
+
+    return _.uniq(
+        _.select(
+            $('body').find("a").map(function(i, a) {
+                // grab the href from any links. the replace here should strip /web/timestamp/
+                var href;
+                if ( a.attribs && a.attribs.href ) {
+                    href = a.attribs.href.replace(re, "");
+                    href = url.resolve(u, href);
+                }
+                else {
+                    href = undefined;
+                }
+                
+                return href;
+            }),
+            function(url) {
+                return typeof(url) !== "undefined" &&
+                    url.indexOf('http') !== -1 && 
+                    url.indexOf('_vti') === -1 && 
+                    url.indexOf("yahoo.com/Regional/") === -1 &&
+                    url.indexOf("yahoo.com/bin") === -1 &&
+                    url.indexOf("yahoo.com/SpaceID") === -1 &&
+                    url.length > 1;
+            })
+    );
 };
 
 var dataToUrl = function(obj) {
@@ -125,17 +139,20 @@ var findRedirect = function(c) {
     var $ = cheerio.load(c);
 
     var meta = $("meta[http-equiv]");
-    if ( meta.length > 0 ) {
-        //console.log("**** " + meta.get(0).attribs.content);
-        //console.log("**** " + meta.get(0).attribs.content.split(/;url=/i)[1]);
-        var dest = meta.get(0).attribs.content.split(/;url=/i)[1].replace(re, "");
-        return dest;
-    }
-
     if ( c.indexOf('<p class="code">Redirecting to...</p>') > 0 ) {
         result = $(".impatient a").get(0).attribs.href;
         result = result.replace(re, "");
     }
+    else if ( meta.length > 0 ) {
+        console.log("**** " + meta.get(0).attribs.content);
+        console.log("**** " + meta.get(0).attribs.content.split(/; +?url=/i)[1]);
+        var result =  meta.get(0).attribs.content.split(/; +?url=/i);
+        if ( typeof(result) !== "undefined" && result.length > 0 ) {
+            var dest = result[1].replace(re, "");
+            return dest;
+        }
+    }
+
     return result;
 };
 
@@ -173,7 +190,7 @@ var scrape = function(u) {
                 console.log("looks like " + u + "didn't return a 200, bye");
                 var r = findRedirect(body);
                 if ( typeof(r) !== "undefined" ) {
-                    console.log("let's scrape redirect " + r + " + at some point");
+                    console.log("let's scrape redirect " + r + " at some point");
                     queue.add([r]);
                 }
 
@@ -183,7 +200,8 @@ var scrape = function(u) {
             var page_score = score(u, body);
             if ( page_score > min_score ) {
                 console.log("score: " + page_score + " looks good, let's store it");
-                var urls = urlsToScrape(body);
+
+                var urls = urlsToScrape(body, u);
                 //console.log(urls);
 
                 if ( urls.length > 0 ) {
@@ -216,8 +234,8 @@ var loop = function() {
     var q = require('./queue.js');
     setInterval(function() {
         run();
-        q.peek();
-    }, 45000);
+        //q.peek();
+    }, 15000);
 };
 
 
