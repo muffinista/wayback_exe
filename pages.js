@@ -7,7 +7,6 @@ var conf = JSON.parse(fs.readFileSync('conf.json'));
 var add = function(opts) {
     var connection = mysql.createConnection(conf.mysql);
 
-<<<<<<< HEAD
     console.log("store: " + opts.url);
     connection.query(
         {
@@ -41,16 +40,6 @@ var add = function(opts) {
         });
 
 
-=======
-    connection.query("INSERT INTO pages SET ?", {
-        url: opts.url,
-        score: opts.score,
-        created_at: new Date()
-    }, function(err, result) {
-        console.log(err);
-        console.log(result);
-    });
->>>>>>> dab6045a44d4092fe26de0e76bba108f9b9a81cd
 };
 
 exports.add = add;
