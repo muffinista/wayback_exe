@@ -12,7 +12,8 @@
     "cheerio": ">= 0.19.0",
     "redis": ">= 2.0.1",
     "mysql": ">= 2.9.0",
-    "minimist": ">= 1.2.0"
+    "minimist": ">= 1.2.0",
+    "queneau-buckets": ">= 1.0.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

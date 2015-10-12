@@ -9,49 +9,9 @@ var queue = require('./queue.js');
 var url = require('url');
 
 var re = /\/web\/[\d]+\//;
+var default_timestamp = "19950101";
+var min_score = 0;
 
-/**
- * this returns URLS from the wayback machine archive which match the incoming URL
- */
-var findMatchingUrls = function(url, cb) {
-    var match = "domain";
-    var from = "19950101";
-    var to = "19970101";
-
-    var scrape_url = "https://web.archive.org/cdx/search/cdx?output=json&url=" + url +
-            "&filter=statuscode:200&filter=mimetype:text/html" +
-            //        "&collapse=timestamp:6" +
-            "&limit=100" +
-            "&matchType=" + match +
-            "&from=" + from +
-            "&to=" + to;
-    console.log("LETS FIND URLS MATCHING " + url);
-
-
-    console.log(scrape_url);
-    request(scrape_url, function (error, response, body) {
-        //console.log(body);
-        if (!error && response.statusCode == 200) {
-            var data = JSON.parse(body);
-            var keys = data.shift();
-
-            var objects = _.select(
-                _.map(data, function(x) {
-                    return _.object(keys, x);        
-                }),
-                function(obj) {
-                    // strip out front page extension data
-                    //console.log(obj.original);
-                    return ( obj.original.indexOf('_vti') === -1 );
-                }
-            );
-            
-            //console.log(objects);
-
-            cb(objects);
-        }
-    });
-};
 
 var scrapeUrl = function(url, timestamp, cb) {
     var target = "http://web.archive.org/web/" + timestamp + "/" + url;
@@ -61,9 +21,10 @@ var scrapeUrl = function(url, timestamp, cb) {
             console.log(error);
         }
 
-        if (!error && response.statusCode == 200) {
+        // make sure there was no error, that this was a 200 response, and that it's text-ish
+        if (!error && response.statusCode == 200 && response.headers['content-type'].indexOf("text/") !== -1 ) {
             //console.log(body);
-            console.log("got response, send it along");
+            console.log("got valid response, send it along");
             cb(body);
         }
     });
@@ -109,16 +70,6 @@ var urlsToScrape = function(contents, u) {
     );
 };
 
-var dataToUrl = function(obj) {
-  // [["urlkey","timestamp","original","mimetype","statuscode","digest","length"],
-  // ["edu,rpi)/about/faq/home_page.html", "19990420100910", "http://www.rpi.edu:80/About/FAQ/home_page.html", "text/html", "200", "C4S2ZVJ2W4L72FLRSMEC2HSGRPP43YVL", "2081"],
-    
-  return "http://web.archive.org/web/" + obj.timestamp + "/" + obj.original;
-};
-
-//var url = "http://archive.org/wayback/available?url=amazon.com&timestamp=19950101";
-
-var default_timestamp = "19950101";
 
 var invalidPage = function(c) {
     return c.indexOf('<p class="code">Redirecting to...</p>') > -1 ||
@@ -138,18 +89,18 @@ var findRedirect = function(c) {
     }
     else if ( meta.length > 0 ) {
         console.log("**** " + meta.get(0).attribs.content);
-        console.log("**** " + meta.get(0).attribs.content.split(/; +?url=/i)[1]);
-        result =  meta.get(0).attribs.content.split(/; +?url=/i);
-        if ( typeof(result) !== "undefined" && result.length > 0 ) {
+        console.log("**** " + meta.get(0).attribs.content.split(/; *url=/i)[1]);
+        result =  meta.get(0).attribs.content.split(/; *url=/i);
+        if ( typeof(result) === 'object' && result.length > 1 ) {
             var dest = result[1].replace(re, "");
             return dest;
         }
+        result = undefined; // tmp hack
     }
 
     return result;
 };
 
-var min_score = 0;
 
 var score = function(url, body) {
 
@@ -227,11 +178,10 @@ var loop = function() {
     var q = require('./queue.js');
     setInterval(function() {
         run();
-    }, 15000);
+    }, 10000);
 };
 
 
-exports.findMatchingUrls = findMatchingUrls;
 exports.scrapeUrl = scrapeUrl;
 exports.urlsToScrape = urlsToScrape;
 exports.scrape = scrape;

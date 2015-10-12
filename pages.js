@@ -42,4 +42,30 @@ var add = function(opts) {
 
 };
 
+var getAndMarkRandomUrl = function(cb) {
+    var connection = mysql.createConnection(conf.mysql);
+    connection.query(
+        {
+            sql:'SELECT * FROM pages ORDER BY RAND() LIMIT 1'
+        },
+        function(err, rows, fields) {
+            if (err) throw err;
+            var result = rows[0];
+            console.log(result);
+/*            connection.query("UPDATE pages SET posted_at = NOW() WHERE id = " + result.id,
+                             function(err, result) {
+                                 console.log(err);
+                                 console.log(result);
+                             });
+*/
+            connection.end(function(err) {
+                console.log("mysql connection closed: " + err);
+            });
+
+            cb(result.url);
+        });
+
+};
+
 exports.add = add;
+exports.getAndMarkRandomUrl = getAndMarkRandomUrl;
