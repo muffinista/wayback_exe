@@ -11,6 +11,12 @@ var url = require('url');
 var re = /\/web\/[\d]+\//;
 var default_timestamp = "19950101";
 var min_score = 0;
+var max_year = 1998;
+
+var createIsCool = require('iscool');
+var isCool = createIsCool();
+
+var pages = require('./pages.js');
 
 
 var scrapeUrl = function(url, timestamp, cb) {
@@ -25,7 +31,7 @@ var scrapeUrl = function(url, timestamp, cb) {
         if (!error && response.statusCode == 200 && response.headers['content-type'].indexOf("text/") !== -1 ) {
             //console.log(body);
             console.log("got valid response, send it along");
-            cb(body);
+            cb(body, response.request.href);
         }
     });
 };
@@ -35,6 +41,24 @@ var parseAndClean = function(contents) {
     $("#wm-ipp").remove();
     return $;
 };
+
+var getPageAttrs = function(contents) {
+    var $ = parseAndClean(contents);
+    var attrs = {
+        title: $("title").text(),
+        generator: ""
+    };
+
+    var m = $('meta[name="generator"]').get(0);
+
+    if ( typeof(m) !== "undefined" ) {
+        attrs.generator = m.attribs.content;
+    }
+
+    return attrs;
+};
+
+
 
 
 var urlsToScrape = function(contents, u) {
@@ -50,7 +74,14 @@ var urlsToScrape = function(contents, u) {
                 var href;
                 if ( a.attribs && a.attribs.href ) {
                     href = a.attribs.href.replace(re, "");
-                    href = url.resolve(u, href);
+                    try {
+                        href = url.resolve(u, href);
+                    }
+                    catch(e) {
+                        console.log("URL error: " + href);
+                        console.log(e);
+                        href = undefined;
+                    }
                 }
                 else {
                     href = undefined;
@@ -102,6 +133,7 @@ var findRedirect = function(c) {
 };
 
 
+
 var score = function(url, body) {
 
     // Scraper scoring
@@ -127,11 +159,20 @@ var scrape = function(u) {
     }
 
     queue.runOnce(u, function() {
-        scrapeUrl(u, default_timestamp, function(body) {
+        scrapeUrl(u, default_timestamp, function(body, url) {
             //queue.mark(u);
 
+            console.log("actual url: " + url);
+            var tstamp = url.split('/')[4];
+            var year = parseInt(tstamp.substr(0, 4), 10);
+            console.log("YEAR: " + year);
+            if ( year > max_year ) {
+                console.log("oops, this page is from " + year);
+                return;
+            }
+
             if ( invalidPage(body) ) {
-                console.log("looks like " + u + "didn't return a 200, bye");
+                console.log("looks like " + u + " didn't return a 200, bye");
                 var r = findRedirect(body);
                 if ( typeof(r) !== "undefined" ) {
                     console.log("let's scrape redirect " + r + " at some point");
@@ -141,9 +182,9 @@ var scrape = function(u) {
                 return;
             }
             
-            var page_score = score(u, body);
-            if ( page_score > min_score ) {
-                console.log("score: " + page_score + " looks good, let's store it");
+            var page_score = score(u, body);            
+            if ( isCool(body) && page_score > min_score ) {
+                //console.log("score: " + page_score + " looks good, let's store it");
                 var urls = urlsToScrape(body, u);
 
                 //console.log(urls);
@@ -155,12 +196,19 @@ var scrape = function(u) {
                     console.log("ADD " + urls.length);
                 }
 
-                var p = require('./pages.js');
-                p.add({
+                var attrs = getPageAttrs(body);
+
+                pages.add({
                     url: u,
                     body: body,
-                    score: page_score                   
+                    score: page_score,
+                    tstamp: tstamp,
+                    title: attrs.title,
+                    generator: attrs.generator
                 });
+            }
+            else {
+                console.log("this page wasn't cool enough, sorry :(");
             }
         });
     });
@@ -169,7 +217,12 @@ var scrape = function(u) {
 var run = function() {
     var q = require('./queue.js');
     q.get(function(url) {
-        scrape(url);
+        try {
+            scrape(url);
+        }
+        catch(e) {
+            console.log(";(", e);
+        }
     });
 };
 

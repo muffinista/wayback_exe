@@ -6,4 +6,5 @@ for(var i = 0; i < urls.length; i++ ) {
     var url = urls[i];
     console.log(url);
     q.add(url);
+    q.quit();
 }

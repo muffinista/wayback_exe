@@ -27,6 +27,9 @@ var add = function(opts) {
                 connection.query("INSERT INTO pages SET ?", {
                     url: opts.url,
                     score: opts.score,
+                    title: opts.title,
+                    tstamp: opts.tstamp,
+                    generator: opts.generator,
                     created_at: new Date()
                 }, function(err, result) {
                     console.log(err);
@@ -42,7 +45,7 @@ var add = function(opts) {
 
 };
 
-var getAndMarkRandomUrl = function(cb) {
+var getAndMarkRandom = function(cb) {
     var connection = mysql.createConnection(conf.mysql);
     connection.query(
         {
@@ -62,10 +65,10 @@ var getAndMarkRandomUrl = function(cb) {
                 console.log("mysql connection closed: " + err);
             });
 
-            cb(result.url);
+            cb(result);
         });
 
 };
 
 exports.add = add;
-exports.getAndMarkRandomUrl = getAndMarkRandomUrl;
+exports.getAndMarkRandom = getAndMarkRandom;

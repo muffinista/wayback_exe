@@ -8,8 +8,11 @@ var push_check = "push_check";
 var fs = require('fs');
 var conf = JSON.parse(fs.readFileSync('conf.json'));
 
+
+var client;
+client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
+
 var addOnce = function(url) {
-    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.on("error", function (err) {
         console.log("Error " + err);
     });
@@ -22,17 +25,17 @@ var addOnce = function(url) {
             console.log("push " + url);
             client.hset(push_check, url, "1");
             client.rpush(queue, url, function() {
-                client.quit();
+                //client.quit();
             });
         }
         else {
-            console.log("already added " + url + ", skipping");
-            client.quit();
+            //console.log("already added " + url + ", skipping");
+            //client.quit();
         }
     });
 };
 
-var add = function(urls) {
+var add = function(urls, do_quit) {
     var url;
 
     if ( typeof(urls) === "string" ) {
@@ -42,12 +45,12 @@ var add = function(urls) {
     console.log("here with some urls");
 
     for ( var i = 0; i < urls.length; i++ ) {
-        addOnce(urls[i]);
+        addOnce(urls[i], do_quit);
     }
 };
 
 var get = function(cb) {
-    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);   
+    //var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);   
     client.on("error", function (err) {
         console.log("Error " + err);
     });
@@ -61,7 +64,7 @@ var get = function(cb) {
 
         client.lrem(queue, 0, url);
 
-        client.quit();
+        //client.quit();
 
         cb(url);
     });
@@ -69,7 +72,7 @@ var get = function(cb) {
 };
 
 var peek = function() {
-    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
+    //var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.on("error", function (err) {
         console.log("Error " + err);
     });
@@ -78,17 +81,17 @@ var peek = function() {
         console.log(replies);
         console.log("*****", replies.length);
 
-        client.quit();
+        //client.quit();
     });
 };
 
 var mark = function(u) {
-    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
+    //var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.set(u, "1");
 };
 
 var runOnce = function(u, cb) {
-    var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
+    //var client = redis.createClient(conf.redis.port, conf.redis.host, conf.redis.password);
     client.get(u, function(err, reply) {
         // reply is null when the key is missing
         if ( reply === null ) {
@@ -99,9 +102,15 @@ var runOnce = function(u, cb) {
 };
 
 
+var quit = function() {
+    client.quit();
+};
+
 exports.add = add;
 exports.get = get;
 exports.mark = mark;
 exports.runOnce = runOnce;
 
 exports.peek = peek;
+exports.quit = quit;
+exports.client = client;
