@@ -2,6 +2,7 @@ var _ = require('lodash');
 var phantom = require('phantom');
 var fs = require('fs');
 var cheerio = require('cheerio');
+var moment = require('moment');
 
 var Twit = require('twit');
 
@@ -16,42 +17,11 @@ var viewportOpts = {
 };
 
 var phantomActions = function() {
+    // close wayback machine nav
     __wm.h();
-    return document;
 };
 
-var phantomParse = function(document) {
-    //console.log(document);
-    //    var $ = cheerio.load(document.documentElement.innerHTML);
-    var $ = cheerio.load(document.all['0'].innerHTML);
-    var output = {
-        //        url: document.location.href,
-        url: document.URL,
-        date: "",
-        title: $("title").text(),
-        generator: ""
-    };
-
-    var d = $("#displayDayEl").get(0).attribs.title;
-    //  0   1   2      3      4   5   6
-    // "You are here: 7:38:05 Aug 15, 2000"
-
-    d = d.split(' ');
-    d = d[4] + " " + d[5] + " " + d[6];
-    
-    console.log('date is ' + d);
-    output.date = d;
-
-    var m = $('meta[name="generator"]').get(0);
-
-    if ( typeof(m) !== "undefined" ) {
-        output.generator = m.attribs.content;
-    }
-
-    return output;
-};
-
-var renderUrl = function(p) {
+var renderPage = function(p) {
     var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
     console.log(url);
     
@@ -71,10 +41,24 @@ var renderUrl = function(p) {
                 page.set('viewportSize', viewportOpts);
                 page.set('clipRect', viewportOpts);
 
-                // close wayback machine nav
-                page.evaluate(phantomActions, function(result) {
+                page.evaluate(phantomActions, function() {
 
-                    var tweetText = p.title + "\n" + data.date + "\n" + data.url;
+                    var title = p.title;
+                    if ( title.length > 80 ) {
+                        title = title.substr(0, 76) + "...";
+                    }
+                    var date = moment(p.tstamp, "YYYYMMDDHHmmss").format("MMM YYYY");
+
+                    var tweetText = title + "\n" + date + "\n";
+                    if ( typeof(p.generator) !== "undefined" && 
+                         p !== "" && 
+                         tweetText.length + p.generator.length < 118 ) 
+                    {
+                        tweetText = tweetText + p.generator + "\n";
+                    }
+
+
+                    tweetText = tweetText + url;
 
                     page.render('page.png', function() {
                         var exec = require('child_process').execFileSync;
@@ -104,6 +88,7 @@ var renderUrl = function(p) {
                                 //console.log(data);
                                 console.log("done!");
                                 console.log(err);
+                                ph.exit();
                             }); // status/update
                         }); // media/upload
                         
@@ -122,10 +107,16 @@ var renderUrl = function(p) {
 //var argv = require('minimist')(process.argv.slice(2));
 //var urls = argv._;
 
-//pages.getAndMarkRandomUrl(function(url) {
-//    url = "https://web.archive.org/web/" + from + "/" + url;     
-//    renderUrl(url);
-//});
+pages.getAndMarkRandom(renderPage);
+//{ name: 'frame-05.png', x: 4, y: 142, w: 1021, h: 614 }
+/*renderPage({ id: 1318,
+  url: 'http://sln.fi.edu/biosci/systems/systems.html',
+  tstamp: '19980113210239',
+  title: 'Systems',
+  generator: '',
+  score: 84,
+  created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
+  posted_at: null });*/
 
 
 //renderUrl("https://web.archive.org/web/19950101/http://fourier.haystack.edu/menuSRT.html");
