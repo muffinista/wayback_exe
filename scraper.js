@@ -13,12 +13,13 @@ var default_timestamp = "19950101";
 var min_score = 0;
 var max_year = 1998;
 
-var createIsCool = require('iscool');
-var isCool = createIsCool();
-
 var pages = require('./pages.js');
 
 
+/**
+ * load a single URL from the wayback machine at the specified timestamp,
+ *  make sure it was relatively valid, then pass to callbacka
+ */
 var scrapeUrl = function(url, timestamp, cb) {
     var target = "http://web.archive.org/web/" + timestamp + "/" + url;
     console.log(target);
@@ -27,8 +28,8 @@ var scrapeUrl = function(url, timestamp, cb) {
             console.log(error);
         }
 
-        // make sure there was no error, that this was a 200 response, and that it's text-ish
-        if (!error && response.statusCode == 200 && response.headers['content-type'].indexOf("text/") !== -1 ) {
+        // make sure there was no error, that this was a 200 response, and that it's HTML-ish
+        if (!error && response.statusCode == 200 && response.headers['content-type'].indexOf("text/html") !== -1 ) {
             //console.log(body);
             console.log("got valid response, send it along");
             cb(body, response.request.href);
@@ -36,12 +37,18 @@ var scrapeUrl = function(url, timestamp, cb) {
     });
 };
 
+/**
+ * remove the wayback header from the output so we don't include it in parsing
+ */
 var parseAndClean = function(contents) {
     var $ = cheerio.load(contents);
     $("#wm-ipp").remove();
     return $;
 };
 
+/**
+ * parse out some page attributes for storing later
+ */
 var getPageAttrs = function(contents) {
     var $ = parseAndClean(contents);
     var attrs = {
@@ -60,7 +67,9 @@ var getPageAttrs = function(contents) {
 
 
 
-
+/**
+ * find a list of URLs on the page, remove the wayback prefixes, and return
+ */
 var urlsToScrape = function(contents, u) {
     var $ = parseAndClean(contents);
     if ( typeof(u) == "undefined" ) {
@@ -71,7 +80,7 @@ var urlsToScrape = function(contents, u) {
         _.select(
             $('body').find("a").map(function(i, a) {
                 // grab the href from any links. the replace here should strip /web/timestamp/
-                var href;
+                var href = undefined;
                 if ( a.attribs && a.attribs.href ) {
                     href = a.attribs.href.replace(re, "");
                     try {
@@ -83,13 +92,10 @@ var urlsToScrape = function(contents, u) {
                         href = undefined;
                     }
                 }
-                else {
-                    href = undefined;
-                }
-                
                 return href;
             }),
             function(url) {
+                // strip out some obviously junky URLs
                 return typeof(url) !== "undefined" &&
                     url.indexOf('http') !== -1 && 
                     url.indexOf('_vti') === -1 && 
@@ -101,13 +107,19 @@ var urlsToScrape = function(contents, u) {
     );
 };
 
-
+/**
+ * do a couple basic tests to make sure this is a page we might want to render/store. basically
+ * make sure it's a 200 and doesn't have an old meta-refresh on it
+ */
 var invalidPage = function(c) {
     return c.indexOf('<p class="code">Redirecting to...</p>') > -1 ||
         c.indexOf('<p>Wayback Machine doesn&apos;t have that page archived.</p>') > -1 ||
         c.indexOf('HTTP-EQUIV="REFRESH"') > -1;
 };
 
+/**
+ * look for a potential redirect url on this page
+ */
 var findRedirect = function(c) {
     var result = undefined;
 
@@ -134,8 +146,10 @@ var findRedirect = function(c) {
 
 
 
+/**
+ * generate a fairly arbitrary 'score' for the page. Not really used right now
+ */
 var score = function(url, body) {
-
     // Scraper scoring
     // Number of buzzwords
     // Number of images
@@ -150,6 +164,9 @@ var score = function(url, body) {
     return tags + images + tildes;
 };
 
+/**
+ * scrape the specified URL
+ */
 var scrape = function(u) {
     console.log("lets scrape", u);
 
@@ -160,8 +177,6 @@ var scrape = function(u) {
 
     queue.runOnce(u, function() {
         scrapeUrl(u, default_timestamp, function(body, url) {
-            //queue.mark(u);
-
             console.log("actual url: " + url);
             var tstamp = url.split('/')[4];
             var year = parseInt(tstamp.substr(0, 4), 10);
@@ -178,25 +193,22 @@ var scrape = function(u) {
                     console.log("let's scrape redirect " + r + " at some point");
                     queue.add([r]);
                 }
-
                 return;
             }
             
             var page_score = score(u, body);            
-            if ( isCool(body) && page_score > min_score ) {
+            var attrs = getPageAttrs(body);
+
+            // todo check for coolness
+            var is_cool = true;
+
+            if ( page_score > min_score && is_cool ) {
                 //console.log("score: " + page_score + " looks good, let's store it");
                 var urls = urlsToScrape(body, u);
-
-                //console.log(urls);
 
                 if ( urls.length > 0 ) {
                     queue.add(urls);
                 }
-                else {
-                    console.log("ADD " + urls.length);
-                }
-
-                var attrs = getPageAttrs(body);
 
                 pages.add({
                     url: u,
@@ -214,6 +226,9 @@ var scrape = function(u) {
     });
 };
 
+/**
+ * grab a url from the queue and scrape it
+ */
 var run = function() {
     var q = require('./queue.js');
     q.get(function(url) {
@@ -226,6 +241,9 @@ var run = function() {
     });
 };
 
+/**
+ * main loop. run forever!
+ */
 var loop = function() {
     console.log("ok, running forever!");
     var q = require('./queue.js');

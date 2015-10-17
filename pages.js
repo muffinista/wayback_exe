@@ -4,6 +4,9 @@ var mysql = require('mysql');
 var fs = require('fs');
 var conf = JSON.parse(fs.readFileSync('conf.json'));
 
+/**
+ * add a page to the database
+ */
 var add = function(opts) {
     var connection = mysql.createConnection(conf.mysql);
 
@@ -19,7 +22,7 @@ var add = function(opts) {
             if ( rows[0].tally > 0 ) {
                 console.log("looks like " + opts.url + "is already in the db");
                 connection.end(function(err) {
-                    console.log("mysql connection closed: " + err);
+                    //console.log("mysql connection closed: " + err);
                 });
 
             }
@@ -37,7 +40,7 @@ var add = function(opts) {
                 });
 
                 connection.end(function(err) {
-                    console.log("mysql connection closed: " + err);
+                    //console.log("mysql connection closed: " + err);
                 });               
             }
         });
@@ -45,6 +48,10 @@ var add = function(opts) {
 
 };
 
+/**
+ * Pick a random page from the datavase, and mark is as posted so we only render it at once.
+ * Using RAND() here is pretty awful but performance isn't much of an issue.
+ */
 var getAndMarkRandom = function(cb) {
     var connection = mysql.createConnection(conf.mysql);
     connection.query(
@@ -62,7 +69,6 @@ var getAndMarkRandom = function(cb) {
                              });
 */
             connection.end(function(err) {
-                console.log("mysql connection closed: " + err);
             });
 
             cb(result);

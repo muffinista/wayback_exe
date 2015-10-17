@@ -13,8 +13,8 @@
     "redis": ">= 2.0.1",
     "mysql": ">= 2.9.0",
     "minimist": ">= 1.2.0",
-    "iscool": "1.1.10",
-    "moment": ">= 2.10.6"
+    "moment": ">= 2.10.6",
+    "tumblrwks": ">= 0.2.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
