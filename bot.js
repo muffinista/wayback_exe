@@ -26,6 +26,7 @@ var phantomActions = function() {
     __wm.h();
 };
 
+// send the page to twitter
 var tweetPage = function(url, p, dest, cb) {
     var title = p.title;
     if ( title.length > 80 ) {
@@ -66,6 +67,7 @@ var tweetPage = function(url, p, dest, cb) {
 
 };
 
+// send the page to tumblr
 var postPage = function(url, p, dest, cb) {
     var tumblr = new Tumblr(conf.tumblr, conf.tumblr_url);
 
@@ -89,6 +91,8 @@ var postPage = function(url, p, dest, cb) {
     });
 };
 
+// main action. load page in phantom and send off to assorted
+// tweeting/tumblring routines
 var renderPage = function(p) {
     var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
     console.log(url);
@@ -137,16 +141,4 @@ var renderPage = function(p) {
 
 };
 
-//var argv = require('minimist')(process.argv.slice(2));
-//var urls = argv._;
-
-//pages.getAndMarkRandom(renderPage);
-//{ name: 'frame-05.png', x: 4, y: 142, w: 1021, h: 614 }
-renderPage({ id: 1318,
-  url: 'http://sln.fi.edu/biosci/systems/systems.html',
-  tstamp: '19980113210239',
-  title: 'Systems',
-  generator: '',
-  score: 84,
-  created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
-  posted_at: null });
+pages.getAndMarkRandom(renderPage);
