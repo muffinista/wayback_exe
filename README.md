@@ -20,6 +20,11 @@ The bot is written in node and includes a few pieces:
   an image of an old browser via ImageMagick. Then it sends the image
   to Twitter and Tumblr.
 
+- **pages.js** - code for adding pages to MySQL, and getting them out
+    later.
+
+- **queue.js** - code for managing the scraper queue with Redis
+
 - A bunch of random utility scripts/etc.
   
 Running the bot
@@ -53,7 +58,6 @@ terminal window:
 ```
   echo "var s= require('./scraper.js'); s.loop()" | nodejs;
 ```
-
 
 Let it run for awhile. It will scrape pages, store the results to
 MySQL, and add more URLs to index to Redis. Eventually, you can send a
