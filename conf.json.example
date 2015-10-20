@@ -1,0 +1,25 @@
+{
+  "mysql": {
+    "host": "localhost",
+    "user": "",
+    "database": "",
+    "password": ""
+  },
+  "redis": {
+    "host": "",
+    "port": ""
+  },
+  "twitter": {
+    "consumer_key": "",
+    "consumer_secret": "",
+    "access_token": "",
+    "access_token_secret": ""
+  },
+  "tumblr": {
+    "consumerKey": "",
+    "consumerSecret": "",
+    "accessToken": "",
+    "accessSecret": ""
+  },
+  "tumblr_url": ""
+}
