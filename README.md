@@ -39,6 +39,7 @@ started:
 - create a MySQL database with the script in setup.sql. Add the login
   info to the config.
 - setup Redis and add the credentials to the config
+- run `npm install` to install dependencies
 - Add some interesting URLs to Redis like so:
 
 ```

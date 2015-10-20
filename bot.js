@@ -3,7 +3,7 @@ var phantom = require('phantom');
 var fs = require('fs');
 var cheerio = require('cheerio');
 var moment = require('moment');
-
+var temp = require('temp');
 var Twit = require('twit');
 
 var conf = JSON.parse(fs.readFileSync('conf.json'));
@@ -11,7 +11,11 @@ var T = new Twit(conf.twitter);
 
 var Tumblr = require('tumblrwks');
 
+
+
 var pages = require('./pages.js');
+
+
 
 // default viewport options for phantom. we will tweak these to match
 // the browser frame that we will fit the page into. NOTE: phantom is
@@ -115,10 +119,11 @@ var renderPage = function(p) {
 
                 page.evaluate(phantomActions, function() {
 
-                    page.render('page.png', function() {
+                    var guts = temp.path({prefix: 'page', suffix: '.png'});
+                    page.render(guts, function() {
                         var exec = require('child_process').execFileSync;
-                        var dest = 'tmp.png';
-                        var command = ['page.png', 'images/' + frame.name, '-geometry',
+                        var dest = temp.path({prefix: 'results', suffix: '.png'});
+                        var command = [ guts, 'images/' + frame.name, '-geometry',
                                        '+' + frame.x + '+' + frame.y, dest];
                         console.log(command.join(' '));
 

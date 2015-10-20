@@ -14,7 +14,8 @@
     "mysql": ">= 2.9.0",
     "minimist": ">= 1.2.0",
     "moment": ">= 2.10.6",
-    "tumblrwks": ">= 0.2.0"
+    "tumblrwks": ">= 0.2.0",
+    "temp": ">= 0.8.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
