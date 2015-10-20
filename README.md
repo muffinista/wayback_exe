@@ -5,6 +5,9 @@ This is the code for [wayback_exe](https://twitter.com/wayback_exe), a
 bot that renders images of old web pages from the Wayback Machine and
 posts them to Twitter and Tumblr.
 
+This is my first project in node.js and probably has all sorts of
+awful issues that should be cleaned up. Sorry about that!
+
 The bot is written in node and includes a few pieces:
 
 - **scraper.js** -- this script indexes old web pages in the Wayback
