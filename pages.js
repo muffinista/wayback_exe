@@ -62,15 +62,15 @@ var getAndMarkRandom = function(cb) {
             if (err) throw err;
             var result = rows[0];
             console.log(result);
-/*            connection.query("UPDATE pages SET posted_at = NOW() WHERE id = " + result.id,
+            connection.query("UPDATE pages SET posted_at = NOW() WHERE id = " + result.id,
                              function(err, result) {
                                  console.log(err);
                                  console.log(result);
                              });
-*/
+
             connection.end(function(err) {
             });
-
+            
             cb(result);
         });
 
