@@ -56,7 +56,7 @@ var getAndMarkRandom = function(cb) {
     var connection = mysql.createConnection(conf.mysql);
     connection.query(
         {
-            sql:'SELECT * FROM pages ORDER BY RAND() LIMIT 1'
+            sql:'SELECT * FROM pages WHERE posted_at IS NULL ORDER BY RAND() LIMIT 1'
         },
         function(err, rows, fields) {
             if (err) throw err;
