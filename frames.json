@@ -4,35 +4,46 @@
     "x": 0,
     "y": 150,
     "w": 784,
-    "h": 410
+    "h": 410,
+    "caption-x": 78,
+    "caption-y": 87
   },
   {
     "name": "frame-02.png",
     "x": 0,
     "y": 149,
     "w": 784,
-    "h": 382
+    "h": 382,
+    "caption-x": 78,
+    "caption-y": 87
   },
   {
     "name": "frame-03.png",
     "x": 7,
     "y": 109,
     "w": 772,
-    "h": 658
+    "h": 658,
+    "caption-x": 56,
+    "caption-y": 81,
+    "caption-bgcolor": "#bebebe"
   },
   {
     "name": "frame-04.png",
     "x": 4,
     "y": 115,
     "w": 776,
-    "h": 460
+    "h": 460,
+    "caption-x": 64,
+    "caption-y": 89
   },
   {
     "name": "frame-05.png",
     "x": 4,
     "y": 142,
     "w": 1021,
-    "h": 614
+    "h": 614,
+    "caption-x": 71,
+    "caption-y": 94
   },
   {
     "name": "frame-06.png",
@@ -46,13 +57,19 @@
     "x": 0,
     "y": 152,
     "w": 1009,
-    "h": 577
+    "h": 577,
+    "caption-x": 79,
+    "caption-y": 88
   },
   {
     "name": "frame-08.png",
     "x": 8,
     "y": 174,
     "w": 1233,
-    "h": 1058
+    "h": 1058,
+    "caption-x": 89,
+    "caption-y": 131,
+    "caption-font-size": 19,
+    "caption-bgcolor": "#bebebe"
   }
 ]

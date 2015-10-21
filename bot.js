@@ -103,7 +103,9 @@ var renderPage = function(p) {
     
     var frames = JSON.parse(fs.readFileSync('frames.json'));
     var frame = _.sample(frames);
-    console.log(frame);
+
+    var pointsize = frame["caption-font-size"] || 14;
+    var caption_bgcolor = frame["caption-bgcolor"] || "white";
 
     phantom.create(function (ph) {
         ph.createPage(function (page) {                       
@@ -123,11 +125,39 @@ var renderPage = function(p) {
                     page.render(guts, function() {
                         var exec = require('child_process').execFileSync;
                         var dest = temp.path({prefix: 'results', suffix: '.png'});
-                        var command = [ guts, 'images/' + frame.name, '-geometry',
-                                       '+' + frame.x + '+' + frame.y, dest];
+
+                        var text = temp.path({prefix:'text', suffix:'.png'});
+                        var command = ["-fill", "black",
+                                       "-font", "font.ttf",
+                                       "-pointsize", pointsize,
+                                       "-background", caption_bgcolor,
+                                       "-undercolor", caption_bgcolor,
+                                       "label:" + p.url,
+                                       text
+                                      ];
+
+                        console.log(command.join(' '));
+                        exec('convert', command);                        
+
+                        command = [ guts, 'images/' + frame.name,
+                                    '-geometry', '+' + frame.x + '+' + frame.y, 
+                                    dest];
                         console.log(command.join(' '));
 
                         exec('composite', command);
+
+
+                        if ( frame['caption-x']) {
+                            command = [ text, dest,
+                                        '-geometry', '+' + (frame['caption-x'] + 3) + '+' + (frame['caption-y'] + 3), 
+                                        dest];
+                            console.log(command.join(' '));
+                            
+                            exec('composite', command);
+                        }
+
+
+                        console.log(dest);
                         tweetPage(url, p, dest,
                                   function() { 
                                       postPage(url, p, dest); 
