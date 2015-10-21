@@ -127,14 +127,16 @@ var renderPage = function(p) {
                         var dest = temp.path({prefix: 'results', suffix: '.png'});
 
                         var text = temp.path({prefix:'text', suffix:'.png'});
-                        var command = ["-fill", "black",
-                                       "-font", "font.ttf",
-                                       "-pointsize", pointsize,
-                                       "-background", caption_bgcolor,
-                                       "-undercolor", caption_bgcolor,
-                                       "label:" + p.url,
-                                       text
-                                      ];
+                        var command = [
+                            "-background", "rgba(0,0,0,0.0)",
+                            "-fill", "black",
+                            "-font", "font.ttf",
+                            "-pointsize", pointsize,
+                            //"-background", caption_bgcolor,
+                            //"-undercolor", caption_bgcolor,
+                            "label:" + p.url,
+                            text
+                        ];
 
                         console.log(command.join(' '));
                         exec('convert', command);                        
@@ -177,3 +179,14 @@ var renderPage = function(p) {
 };
 
 pages.getAndMarkRandom(renderPage);
+
+/** testing
+renderPage({ id: 1318,
+             url: 'http://sln.fi.edu/biosci/systems/systems.html',
+             tstamp: '19980113210239',
+             title: 'Systems',
+             generator: '',
+             score: 84,
+             created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
+             posted_at: null });
+*/
