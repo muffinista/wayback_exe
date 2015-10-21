@@ -210,14 +210,19 @@ var scrape = function(u) {
                     queue.add(urls);
                 }
 
-                pages.add({
-                    url: u,
-                    body: body,
-                    score: page_score,
-                    tstamp: tstamp,
-                    title: attrs.title,
-                    generator: attrs.generator
-                });
+		if ( u.indexOf("yahoo.com") === -1 ) {
+                    pages.add({
+			url: u,
+			body: body,
+			score: page_score,
+			tstamp: tstamp,
+			title: attrs.title,
+			generator: attrs.generator
+                    });
+		}
+		else {
+		    console.log("we will scrape yahoo pages but not store them in mysql");
+		}
             }
             else {
                 console.log("this page wasn't cool enough, sorry :(");
