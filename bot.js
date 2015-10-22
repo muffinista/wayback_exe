@@ -28,6 +28,42 @@ var viewportOpts = {
 var phantomActions = function() {
     // trigger in-page js to close wayback machine nav
     __wm.h();
+
+    //
+    // inject a function to iterate through all text nodes in the body, so we can clean them up a bit
+    //
+    function nativeSelector() {
+        var walker = document.createTreeWalker(
+            document.body, 
+            NodeFilter.SHOW_TEXT, 
+            null, 
+            false
+        );
+
+        var node;
+        var textNodes = [];
+
+        // this is silly because there's no logic here, so we could just 
+        // pass in a function to run against the node, but leaving for now
+        while((node = walker.nextNode())) {
+            textNodes.push(node);
+        }
+
+        return textNodes;
+    }
+
+    var textnodes = nativeSelector(),
+        _nv;
+    for (var i = 0, len = textnodes.length; i<len; i++){
+        _nv = textnodes[i].textContent;
+
+        // attempt to strip email addresses and phone numbers from output
+        _nv = _nv.replace(/[A-Za-z0-9_\-\.]+\@/g, 'postmaster@').
+            replace(/[\(\+]?\b[0-9\-\(\)+^'^"^<^>]{10,14}\b/g, function(m) { return m.replace(/[0-9]/g, "x"); });
+
+        textnodes[i].textContent = _nv;
+    }
+
 };
 
 // send the page to twitter
@@ -97,9 +133,13 @@ var postPage = function(url, p, dest, cb) {
 
 // main action. load page in phantom and send off to assorted
 // tweeting/tumblring routines
-var renderPage = function(p) {
+var renderPage = function(p, dry_run) {
     var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
     console.log(url);
+
+    if ( typeof(dry_run) === "undefined" ) {
+        dry_run = false;
+    }
     
     var frames = JSON.parse(fs.readFileSync('frames.json'));
     var frame = _.sample(frames);
@@ -160,11 +200,16 @@ var renderPage = function(p) {
 
 
                         console.log(dest);
-                        tweetPage(url, p, dest,
-                                  function() { 
-                                      postPage(url, p, dest); 
-                                      ph.exit();
-                                  });
+                        if ( dry_run === true ) {
+                            ph.exit();
+                        }
+                        else {
+                            tweetPage(url, p, dest,
+                                      function() { 
+                                          postPage(url, p, dest); 
+                                          ph.exit();
+                                      });
+                        }
                        
                     }); // render
                 }); // evaluate
@@ -180,13 +225,15 @@ var renderPage = function(p) {
 
 pages.getAndMarkRandom(renderPage);
 
-/** testing
-renderPage({ id: 1318,
-             url: 'http://sln.fi.edu/biosci/systems/systems.html',
-             tstamp: '19980113210239',
-             title: 'Systems',
-             generator: '',
-             score: 84,
-             created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
-             posted_at: null });
+/** renderPage(
+    { id: 1318,
+      url: 'http://forums.nj.com/forums/get/hunterdon/70.html',
+      tstamp: '19970618221706',
+      title: 'Systems',
+      generator: '',
+      score: 84,
+      created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
+      posted_at: null 
+    },
+    true);
 */
