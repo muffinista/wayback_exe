@@ -223,9 +223,11 @@ var renderPage = function(p, dry_run) {
 
 };
 
-//pages.getAndMarkRandom(renderPage);
+pages.getAndMarkRandom(renderPage);
 
-renderPage(
+/**
+ * 
+ */renderPage(
     { id: 1318,
       url: 'http://www.hiway.com/',
       tstamp: '19961222133514',
@@ -236,3 +238,4 @@ renderPage(
       posted_at: null 
     },
     true);
+*/
