@@ -226,8 +226,7 @@ var renderPage = function(p, dry_run) {
 pages.getAndMarkRandom(renderPage);
 
 /**
- * 
- */renderPage(
+ renderPage(
     { id: 1318,
       url: 'http://www.hiway.com/',
       tstamp: '19961222133514',
