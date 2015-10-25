@@ -58,8 +58,8 @@ var phantomActions = function() {
         _nv = textnodes[i].textContent;
 
         // attempt to strip email addresses and phone numbers from output
-        _nv = _nv.replace(/[A-Za-z0-9_\-\.]+\@/g, 'postmaster@').
-            replace(/[\(\+]?\b[0-9\-\(\)+^'^"^<^>]{10,14}\b/g, function(m) { return m.replace(/[0-9]/g, "x"); });
+        _nv = _nv.replace(/[A-Za-z0-9_\-\.]+\@/g, '░░░░░@').
+            replace(/[\(\+]?\b[ 0-9\-\(\)+^'^"^<^>]{10,14}\b/g, function(m) { return m.replace(/[0-9]/g, "x"); });
 
         textnodes[i].textContent = _nv;
     }
@@ -223,12 +223,12 @@ var renderPage = function(p, dry_run) {
 
 };
 
-pages.getAndMarkRandom(renderPage);
+//pages.getAndMarkRandom(renderPage);
 
-/** renderPage(
+renderPage(
     { id: 1318,
-      url: 'http://forums.nj.com/forums/get/hunterdon/70.html',
-      tstamp: '19970618221706',
+      url: 'http://www.hiway.com/',
+      tstamp: '19961222133514',
       title: 'Systems',
       generator: '',
       score: 84,
@@ -236,4 +236,3 @@ pages.getAndMarkRandom(renderPage);
       posted_at: null 
     },
     true);
-*/
