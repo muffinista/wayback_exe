@@ -59,7 +59,18 @@ var mark = function(u) {
     client.set(u, "1");
 };
 
+var _alwaysRun = false;
+var alwaysRun = function(val) {
+    _alwaysRun = val;
+}
+
 var runOnce = function(u, cb) {
+    if ( _alwaysRun == true ) {
+        console.log("queue is set to always run!");
+        cb();
+        return true;
+    }
+
     client.get(u, function(err, reply) {
         // reply is null when the key is missing
         if ( reply === null ) {
@@ -77,6 +88,7 @@ var quit = function() {
 exports.add = add;
 exports.get = get;
 exports.mark = mark;
+exports.alwaysRun = alwaysRun;
 exports.runOnce = runOnce;
 
 exports.peek = peek;

@@ -16,6 +16,11 @@ var max_year = 1998;
 var pages = require('./pages.js');
 
 
+var alwaysRun = function(val) {
+    queue.alwaysRun(val);
+}
+
+
 /**
  * load a single URL from the wayback machine at the specified timestamp,
  *  make sure it was relatively valid, then pass to callbacka
@@ -176,9 +181,9 @@ var scrape = function(u) {
     }
 
     queue.runOnce(u, function() {
-        scrapeUrl(u, default_timestamp, function(body, url) {
-            console.log("actual url: " + url);
-            var tstamp = url.split('/')[4];
+        scrapeUrl(u, default_timestamp, function(body, _url) {
+            console.log("actual url: " + _url);
+            var tstamp = _url.split('/')[4];
             var year = parseInt(tstamp.substr(0, 4), 10);
             console.log("YEAR: " + year);
             if ( year > max_year ) {
@@ -210,19 +215,22 @@ var scrape = function(u) {
                     queue.add(urls);
                 }
 
-		if ( u.indexOf("yahoo.com") === -1 ) {
+		            if ( u.indexOf("yahoo.com") === -1 ) {
+                    var h = url.parse(u).host;
                     pages.add({
-			url: u,
-			body: body,
-			score: page_score,
-			tstamp: tstamp,
-			title: attrs.title,
-			generator: attrs.generator
+			                  url: u,
+                        host: h,
+			                  body: body,
+			                  score: page_score,
+			                  tstamp: tstamp,
+			                  title: attrs.title,
+			                  generator: attrs.generator,
+                        content: body
                     });
-		}
-		else {
-		    console.log("we will scrape yahoo pages but not store them in mysql");
-		}
+		            }
+		            else {
+		                console.log("we will scrape yahoo pages but not store them in mysql");
+		            }
             }
             else {
                 console.log("this page wasn't cool enough, sorry :(");
@@ -258,6 +266,7 @@ var loop = function() {
 };
 
 
+exports.alwaysRun = alwaysRun;
 exports.scrapeUrl = scrapeUrl;
 exports.urlsToScrape = urlsToScrape;
 exports.scrape = scrape;

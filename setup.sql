@@ -9,3 +9,6 @@ CREATE TABLE IF NOT EXISTS pages (
        posted_at DATETIME NULL,
        primary key (id)
 );
+
+ALTER TABLE pages ADD COLUMN content LONGTEXT NULL;
+ALTER TABLE pages ADD COLUMN host varchar(100) NULL;

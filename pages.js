@@ -33,6 +33,8 @@ var add = function(opts) {
                     title: opts.title,
                     tstamp: opts.tstamp,
                     generator: opts.generator,
+                    content: opts.content,
+                    host: opts.host,
                     created_at: new Date()
                 }, function(err, result) {
                     console.log(err);
@@ -44,12 +46,10 @@ var add = function(opts) {
                 });               
             }
         });
-
-
 };
 
 /**
- * Pick a random page from the datavase, and mark is as posted so we only render it at once.
+ * Pick a random page from the database, and mark is as posted so we only render it at once.
  * Using RAND() here is pretty awful but performance isn't much of an issue.
  */
 var getAndMarkRandom = function(cb) {
@@ -75,6 +75,7 @@ var getAndMarkRandom = function(cb) {
         });
 
 };
+
 
 exports.add = add;
 exports.getAndMarkRandom = getAndMarkRandom;
