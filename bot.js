@@ -84,6 +84,9 @@ var postPage = function(p, dest, cb) {
 
 
 var renderPage = function(p) {
+    // hacky fun to pass along an option which will wrap the output in a frame
+    p.wrap = true;
+
     renderer.render(p, function(dest) {
         tweetPage(p, dest,
                   function() { 
