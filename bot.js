@@ -12,8 +12,7 @@ var Tumblr = require('tumblrwks');
 
 
 var pages = require('./pages.js');
-
-
+var renderer = require('./renderer.js');
 
 
 // send the page to twitter
@@ -89,7 +88,6 @@ var renderPage = function(p) {
         tweetPage(p, dest,
                   function() { 
                       postPage(p, dest); 
-                      ph.exit();
                   });
     });
 };

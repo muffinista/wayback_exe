@@ -74,8 +74,11 @@ var runOnce = function(u, cb) {
     client.get(u, function(err, reply) {
         // reply is null when the key is missing
         if ( reply === null ) {
-            client.set(u, "1");
             cb();
+            client.set(u, "1");
+        }
+        else {
+            console.log("looks like " + u + " was already scraped");
         }
     });
 };

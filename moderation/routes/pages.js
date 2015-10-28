@@ -25,7 +25,6 @@ router.get("/:id/approve", function(req, res) {
     pages.approve({id: req.params.id}, function(p) {
         res.json(true);
     });
-
 });
 
 module.exports = router;

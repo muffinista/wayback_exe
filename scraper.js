@@ -15,10 +15,15 @@ var max_year = 1998;
 
 var pages = require('./pages.js');
 
+var wordfilter = require('wordfilter');
 
+
+/**
+ * run without checking if a page has aleady been scraped
+ */
 var alwaysRun = function(val) {
     queue.alwaysRun(val);
-}
+};
 
 
 /**
@@ -30,12 +35,12 @@ var scrapeUrl = function(url, timestamp, cb) {
     console.log(target);
     request(target, function (error, response, body) {
         if ( error || response.statusCode !== 200 ) {
-            console.log(error);
+            console.log("ERR: " + error);
+            console.log("status code: " + response.statusCode); 
         }
 
         // make sure there was no error, that this was a 200 response, and that it's HTML-ish
         if (!error && response.statusCode == 200 && response.headers['content-type'].indexOf("text/html") !== -1 ) {
-            //console.log(body);
             console.log("got valid response, send it along");
             cb(body, response.request.href);
         }
@@ -205,15 +210,27 @@ var scrape = function(u) {
             var page_score = score(u, body);            
             var attrs = getPageAttrs(body);
 
-            // todo check for coolness
-            var is_cool = true;
-
-            if ( page_score > min_score && is_cool ) {
+            if ( page_score > min_score ) {
                 //console.log("score: " + page_score + " looks good, let's store it");
                 var urls = urlsToScrape(body, u);
 
                 if ( urls.length > 0 ) {
                     queue.add(urls);
+                }
+
+                //
+                // we'll auto-approve pages that don't have bad words on them
+                // and don't have long strings of numbers (phone numbers, etc)
+                //
+
+                var approved_at;
+
+                var $ = cheerio.load(body.replace(/</g, ' <'));
+                var test_text = $("body").first().text().replace(/ +/g, " ");
+
+                if ( test_text.match(/[\(\+]?\b[ 0-9\-\(\)+^'^"^<^>]{10,14}\b/g) === null &&
+                     ! wordfilter.blacklisted(test_text) ) {
+                    approved_at = new Date();
                 }
 
 		            if ( u.indexOf("yahoo.com") === -1 ) {
@@ -226,7 +243,8 @@ var scrape = function(u) {
 			                  tstamp: tstamp,
 			                  title: attrs.title,
 			                  generator: attrs.generator,
-                        content: body
+                        content: body,
+                        approved_at: approved_at
                     });
 		            }
 		            else {

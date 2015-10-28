@@ -4,7 +4,6 @@ var conf = JSON.parse(fs.readFileSync('../conf.json'));
 
 var pool = mysql.createPool(conf.mysql);
 
-
 exports.getPages = function(opts, cb) {
     pool.getConnection(function(err, conn) {
         conn.query("SELECT id, url, tstamp, title FROM pages WHERE approved_at IS NULL AND posted_at IS NULL limit 1000", cb);
