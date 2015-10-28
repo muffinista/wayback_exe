@@ -1,5 +1,5 @@
 {
-  "name": "wayyyback",
+  "name": "wayback_exe",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,7 +15,8 @@
     "minimist": ">= 1.2.0",
     "moment": ">= 2.10.6",
     "tumblrwks": ">= 0.2.0",
-    "temp": ">= 0.8.3"
+    "temp": ">= 0.8.3",
+    "express": ">= 4.13.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

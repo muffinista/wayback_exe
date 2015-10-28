@@ -12,3 +12,8 @@ CREATE TABLE IF NOT EXISTS pages (
 
 ALTER TABLE pages ADD COLUMN content LONGTEXT NULL;
 ALTER TABLE pages ADD COLUMN host varchar(100) NULL;
+
+
+ALTER TABLE pages ADD COLUMN approved_at DATETIME NULL;
+
+create index approved_at on pages(approved_at);

@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <style>
+      .list {
+      height: 200px;
+      overflow-y: scroll;
+      }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script id="page-template" type="text/x-handlebars-template">
+  <table width="100%">
+    {{#each pages}}
+    <tr data-page-id="{{id}}">
+      <td><a class="trigger-preview" href="#"
+             data-id="{{id}}">{{id}}</a></td>
+      <td><a class="trigger-approve" href="/pages/{{id}}/approve" data-id="{{id}}">approve</a></td>
+      <td><a target="_blank" href="http://web.archive.org/web/{{tstamp}}/{{url}}">view</a></td>
+      <td>{{title}}</td>
+    </tr>
+  {{/each}}
+  </table>
+</script>
+<script id="preview-template" type="text/x-handlebars-template">
+<img src="/pages/{{id}}/preview" />
+</script>
+    <script src="/javascripts/handlebars.js"></script>
+    <script src="/javascripts/pages.js"></script>
+  </head>
+  <body>
+    <div class="list">
+
+
+    </div>
+    <div class="preview">
+
+    </div>
+  </body>
+</html>
