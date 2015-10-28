@@ -119,7 +119,8 @@ var urlsToScrape = function(contents, u) {
 var invalidPage = function(c) {
     return c.indexOf('<p class="code">Redirecting to...</p>') > -1 ||
         c.indexOf('<p>Wayback Machine doesn&apos;t have that page archived.</p>') > -1 ||
-        c.indexOf('HTTP-EQUIV="REFRESH"') > -1;
+        c.indexOf('HTTP-EQUIV="REFRESH"') > -1 ||
+        c.indexOf('frameset') > -1;
 };
 
 /**
