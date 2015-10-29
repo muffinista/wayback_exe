@@ -36,7 +36,7 @@ var scrapeUrl = function(url, timestamp, cb, onError) {
     request(target, function (error, response, body) {
         if ( error || response.statusCode !== 200 ) {
             console.log("ERR: " + error);
-            console.log("status code: " + response.statusCode); 
+            console.log("response: " + response); 
 
             if ( typeof(onError) !== "undefined" ) {
                 onError(error, response);
