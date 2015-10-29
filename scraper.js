@@ -30,13 +30,17 @@ var alwaysRun = function(val) {
  * load a single URL from the wayback machine at the specified timestamp,
  *  make sure it was relatively valid, then pass to callbacka
  */
-var scrapeUrl = function(url, timestamp, cb) {
+var scrapeUrl = function(url, timestamp, cb, onError) {
     var target = "http://web.archive.org/web/" + timestamp + "/" + url;
     console.log(target);
     request(target, function (error, response, body) {
         if ( error || response.statusCode !== 200 ) {
             console.log("ERR: " + error);
             console.log("status code: " + response.statusCode); 
+
+            if ( typeof(onError) !== "undefined" ) {
+                onError(error, response);
+            }
         }
 
         // make sure there was no error, that this was a 200 response, and that it's HTML-ish
