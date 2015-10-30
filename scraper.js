@@ -16,6 +16,7 @@ var max_year = 1998;
 var pages = require('./pages.js');
 
 var wordfilter = require('wordfilter');
+wordfilter.addWords(['nude', 'naked', 'xxx', 'porn']);
 
 
 /**
