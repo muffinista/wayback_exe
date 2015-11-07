@@ -56,7 +56,7 @@ var add = function(opts) {
 var getAndMarkRandom = function(cb) {
     pool.getConnection(function(err, connection) {
         connection.query(
-            "SELECT host FROM pages WHERE posted_at IS NOT NULL ORDER by posted_at DESC LIMIT 10", 
+            "SELECT host FROM pages WHERE posted_at IS NOT NULL ORDER by posted_at DESC LIMIT 50", 
             function(err, rows, fields) {
                 var hosts = lodash.map(rows, function(x) { return x.host; });
 
