@@ -79,6 +79,8 @@ var postPage = function(p, dest, cb) {
     }, function(err, json){
         console.log(err);
         console.log(json);
+
+	pages.close();
     });
 };
 
@@ -88,14 +90,18 @@ var renderPage = function(p) {
     p.wrap = true;
 
     renderer.render(p, function(dest) {
+	console.log("call tweetPage");
         tweetPage(p, dest,
-                  function() { 
+                  function() {
+		      console.log("call postPage");
                       postPage(p, dest); 
                   });
     });
 };
 
 pages.getAndMarkRandom(renderPage);
+
+console.log("done!");
 
 /**
  renderPage(

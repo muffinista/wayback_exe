@@ -86,6 +86,14 @@ var getAndMarkRandom = function(cb) {
     
 };
 
+var close = function() {
+    console.log("closing mysql pool!");
+    pool.end(function (err) {
+	// all connections in the pool have ended
+	console.log("MySQL pool closed");
+    });
+};
 
 exports.add = add;
 exports.getAndMarkRandom = getAndMarkRandom;
+exports.close = close;
