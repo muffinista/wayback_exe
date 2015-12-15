@@ -17,6 +17,9 @@ var renderer = require('./renderer.js');
 
 // send the page to twitter
 var tweetPage = function(p, dest, cb) {
+    // it's 23 but i'm being safe
+    var shortened_url_length = 24;
+
     var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
     var title = p.title;
     if ( title.length > 80 ) {
@@ -27,13 +30,18 @@ var tweetPage = function(p, dest, cb) {
     var tweetText = title + "\n" + date + "\n";
     if ( typeof(p.generator) !== "undefined" &&
          p.generator !== "" &&
-         tweetText.length + p.generator.length < 118 )
+         tweetText.length + p.generator.length < 138 - shortened_url_length )
     {
         tweetText = tweetText + p.generator + "\n";
     }
     
     tweetText = tweetText + url;
 
+    if ( tweetText.length < 138 - shortened_url_length ) {
+	var oldweb_url = "http://oldweb.today/random/" + p.tstamp + "/" + p.url;
+	tweetText = tweetText + "\n" + oldweb_url;
+    }
+    
     var imgContent = fs.readFileSync(dest, { encoding: 'base64' });
 
     T.post('media/upload', { media_data: imgContent }, function (err, data, response) {
@@ -60,6 +68,7 @@ var tweetPage = function(p, dest, cb) {
 // send the page to tumblr
 var postPage = function(p, dest, cb) {
     var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
+    var oldweb_url = "http://oldweb.today/random/" + p.tstamp + "/" + p.url;
     var tumblr = new Tumblr(conf.tumblr, conf.tumblr_url);
 
     var title = p.title;
@@ -70,6 +79,8 @@ var postPage = function(p, dest, cb) {
         caption = caption + p.generator + "\n";
     }
 
+    caption = caption + "\n<a href='" + oldweb_url + "'>view on oldweb.today</a>";
+    
     var imgContent = fs.readFileSync(dest, { encoding: 'base64' });
     tumblr.post('/post', {
         type: 'photo', 
