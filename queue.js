@@ -14,19 +14,23 @@ client.on("error", function (err) {
     console.log("Error " + err);
 });
 
+var no_op = function() {
+
+};
+
 var addOnce = function(url) {
     client.on("error", function (err) {
         console.log("Error " + err);
     });
-    console.log(url);
+    //console.log(url);
 
     // only add to the queue if we haven't already added it
     client.hget(push_check, url, function(err, reply) {
         // reply is null when the key is missing
         if ( reply === null ) {
-            console.log("push " + url);
+            //console.log("push " + url);
             client.hset(push_check, url, "1");
-            client.rpush(queue, url, redis.print);
+            client.rpush(queue, url, no_op);
         }
     });
 };
@@ -50,8 +54,8 @@ var get = function(cb) {
 
 var peek = function() {
     client.lrange(queue, 0, 1000, function(err, replies) {
-        console.log(replies);
-        console.log("*****", replies.length);
+        //console.log(replies);
+        //console.log("*****", replies.length);
     });
 };
 

@@ -36,8 +36,8 @@ var scrapeUrl = function(url, timestamp, cb, onError) {
     console.log(target);
     request(target, function (error, response, body) {
         if ( error || response.statusCode !== 200 ) {
-            console.log("ERR: " + error);
-            console.log("response: " + response); 
+            //console.log("ERR: " + error);
+            //console.log("response: " + response); 
 
             if ( typeof(onError) !== "undefined" ) {
                 onError(error, response);
@@ -46,7 +46,7 @@ var scrapeUrl = function(url, timestamp, cb, onError) {
 
         // make sure there was no error, that this was a 200 response, and that it's HTML-ish
         if (!error && response.statusCode == 200 && response.headers['content-type'].indexOf("text/html") !== -1 ) {
-            console.log("got valid response, send it along");
+            //console.log("got valid response, send it along");
             cb(body, response.request.href);
         }
     });
@@ -147,8 +147,8 @@ var findRedirect = function(c) {
         result = result.replace(re, "");
     }
     else if ( meta.length > 0 ) {
-        console.log("**** " + meta.get(0).attribs.content);
-        console.log("**** " + meta.get(0).attribs.content.split(/; *url=/i)[1]);
+        //console.log("**** " + meta.get(0).attribs.content);
+        //console.log("**** " + meta.get(0).attribs.content.split(/; *url=/i)[1]);
         result =  meta.get(0).attribs.content.split(/; *url=/i);
         if ( typeof(result) === 'object' && result.length > 1 ) {
             var dest = result[1].replace(re, "");
@@ -175,7 +175,7 @@ var score = function(url, body) {
     var images = $("img").length;
     var tildes = (url.indexOf("~") !== -1) ? 100 : 0;
 
-    console.log("tags: " + tags + " images: " + images + " tildes: " + tildes);
+    //console.log("tags: " + tags + " images: " + images + " tildes: " + tildes);
 
     return tags + images + tildes;
 };
@@ -184,7 +184,7 @@ var score = function(url, body) {
  * scrape the specified URL
  */
 var scrape = function(u) {
-    console.log("lets scrape", u);
+    //console.log("lets scrape", u);
 
     if ( typeof(u) === "undefined" ) {
         console.log("nothing to scrape!");
@@ -196,17 +196,17 @@ var scrape = function(u) {
             console.log("actual url: " + _url);
             var tstamp = _url.split('/')[4];
             var year = parseInt(tstamp.substr(0, 4), 10);
-            console.log("YEAR: " + year);
+            //console.log("YEAR: " + year);
             if ( year > max_year ) {
                 console.log("oops, this page is from " + year);
                 return;
             }
 
             if ( invalidPage(body) ) {
-                console.log("looks like " + u + " didn't return a 200, bye");
+                //console.log("looks like " + u + " didn't return a 200, bye");
                 var r = findRedirect(body);
                 if ( typeof(r) !== "undefined" ) {
-                    console.log("let's scrape redirect " + r + " at some point");
+                    //console.log("let's scrape redirect " + r + " at some point");
                     queue.add([r]);
                 }
                 return;
@@ -253,11 +253,11 @@ var scrape = function(u) {
                     });
 		            }
 		            else {
-		                console.log("we will scrape yahoo pages but not store them in mysql");
+		                //console.log("we will scrape yahoo pages but not store them in mysql");
 		            }
             }
             else {
-                console.log("this page wasn't cool enough, sorry :(");
+                //console.log("this page wasn't cool enough, sorry :(");
             }
         });
     });
