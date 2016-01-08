@@ -66,6 +66,11 @@ var getAndMarkRandom = function(cb) {
                                  function(err, rows, fields) {
                                      if (err) throw err;
                                      var result = rows[0];
+
+                                     // execute callback now before marked as posted
+                                     // so that if something goes wrong, we preserve the page
+                                     cb(result);
+
                                      //console.log(result);
                                      connection.query("UPDATE pages SET posted_at = NOW() WHERE id = " + result.id,
                                                       function(err, result) {
@@ -74,7 +79,6 @@ var getAndMarkRandom = function(cb) {
                                                       });
                                     
                 
-                                     cb(result);
                     });
 
             });

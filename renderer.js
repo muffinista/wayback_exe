@@ -119,6 +119,10 @@ var render = function(p, cb) {
             page.open(url, function (status) {
                 console.log("status? ", status);
 
+                if ( status == "fail" ) {
+                    throw new Error("sorry, something went wrong");
+                }
+
                 /*if ( page.content.match(/504 Gateway/) ) {
                     ph.exit();
                     cb();
@@ -170,12 +174,14 @@ var render = function(p, cb) {
 exports.render = render;
 /**
 render({ id: 1318,
-         url: 'http://yahoo.com/',
-         tstamp: '19981206224454',
+         wrap: true,
+         url: 'http://www.mcs.com/~nr706/home.html',
+         tstamp: '19970521165416',
          title: 'Systems',
          generator: '',
          score: 84,
          created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
          posted_at: null 
        }, function(dest) { console.log(dest); });
+
 */
