@@ -119,6 +119,14 @@ var render = function(p, cb) {
             page.open(url, function (status) {
                 console.log("status? ", status);
 
+                console.log(page.content);
+
+                if ( true || page.content.match(/504 Gateway/) ) {
+                    ph.exit();
+                    cb();
+                    return;
+                }
+
                 // set the size of the browser to be the size of the interior of the frame
                 if ( p.wrap !== "undefined" && p.wrap === true ) {
                     viewportOpts.width = frame.w;
@@ -136,12 +144,10 @@ var render = function(p, cb) {
                     var guts = temp.path({prefix: 'page', suffix: '.png'});
                     page.render(guts, function() {
                         var dest;
-                        console.log("**** " + p.wrap);
                         if ( p.wrap !== "undefined" && p.wrap === true ) {
                             dest = wrap(guts, p, frame);
                         }
                         else {
-                            console.log("no frame!");
                             dest = guts;
                         }
 

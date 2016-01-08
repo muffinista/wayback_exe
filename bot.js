@@ -38,8 +38,8 @@ var tweetPage = function(p, dest, cb) {
     tweetText = tweetText + url;
 
     if ( tweetText.length < 138 - shortened_url_length ) {
-	var oldweb_url = "http://oldweb.today/random/" + p.tstamp + "/" + p.url;
-	tweetText = tweetText + "\n" + oldweb_url;
+	      var oldweb_url = "http://oldweb.today/random/" + p.tstamp + "/" + p.url;
+	      tweetText = tweetText + "\n" + oldweb_url;
     }
     
     var imgContent = fs.readFileSync(dest, { encoding: 'base64' });
@@ -90,10 +90,10 @@ var postPage = function(p, dest, cb) {
     }, function(err, json){
         console.log(err);
         console.log(json);
-
-	pages.close();
+	      pages.close();
     });
 };
+
 
 
 var renderPage = function(p) {
@@ -101,18 +101,19 @@ var renderPage = function(p) {
     p.wrap = true;
 
     renderer.render(p, function(dest) {
-	console.log("call tweetPage");
-        tweetPage(p, dest,
-                  function() {
-		      console.log("call postPage");
-                      postPage(p, dest); 
-                  });
+        if ( typeof(dest) === "undefined" ) {
+            console.log("well, better luck next time i guess");
+        }
+        else {
+            tweetPage(p, dest,
+                      function() {
+                          postPage(p, dest); 
+                      });
+        }
     });
 };
 
 pages.getAndMarkRandom(renderPage);
-
-console.log("done!");
 
 /**
  renderPage(
