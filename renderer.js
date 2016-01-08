@@ -13,7 +13,18 @@ var viewportOpts = {
 
 var phantomActions = function() {
     // trigger in-page js to close wayback machine nav
-    __wm.h();
+    if ( typeof(__wm) !== "undefined" ) {
+        __wm.h();
+    }
+
+    // try and close WM js on any frames
+    var list = Array.prototype.slice.call( document.getElementsByTagName("frame") );
+    list.forEach(function(f) {
+        if ( f && f.contentWindow && f.contentWindow.__wm ) {
+            f.contentWindow.__wm.h();
+        }
+    });
+
 
     //
     // inject a function to iterate through all text nodes in the body, so we can clean them up a bit
@@ -108,6 +119,14 @@ var render = function(p, cb) {
             page.open(url, function (status) {
                 console.log("status? ", status);
 
+                console.log(page.content);
+
+                if ( true || page.content.match(/504 Gateway/) ) {
+                    ph.exit();
+                    cb();
+                    return;
+                }
+
                 // set the size of the browser to be the size of the interior of the frame
                 if ( p.wrap !== "undefined" && p.wrap === true ) {
                     viewportOpts.width = frame.w;
@@ -125,12 +144,10 @@ var render = function(p, cb) {
                     var guts = temp.path({prefix: 'page', suffix: '.png'});
                     page.render(guts, function() {
                         var dest;
-                        console.log("**** " + p.wrap);
                         if ( p.wrap !== "undefined" && p.wrap === true ) {
                             dest = wrap(guts, p, frame);
                         }
                         else {
-                            console.log("no frame!");
                             dest = guts;
                         }
 
@@ -153,10 +170,10 @@ var render = function(p, cb) {
 
 
 exports.render = render;
-/*
+/**
 render({ id: 1318,
-         url: 'http://www.hiway.com/',
-         tstamp: '19961222133514',
+         url: 'http://yahoo.com/',
+         tstamp: '19981206224454',
          title: 'Systems',
          generator: '',
          score: 84,
