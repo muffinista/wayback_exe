@@ -13,7 +13,18 @@ var viewportOpts = {
 
 var phantomActions = function() {
     // trigger in-page js to close wayback machine nav
-    __wm.h();
+    if ( typeof(__wm) !== "undefined" ) {
+        __wm.h();
+    }
+
+    // try and close WM js on any frames
+    var list = Array.prototype.slice.call( document.getElementsByTagName("frame") );
+    list.forEach(function(f) {
+        if ( f && f.contentWindow && f.contentWindow.__wm ) {
+            f.contentWindow.__wm.h();
+        }
+    });
+
 
     //
     // inject a function to iterate through all text nodes in the body, so we can clean them up a bit
@@ -153,10 +164,10 @@ var render = function(p, cb) {
 
 
 exports.render = render;
-/*
+/**
 render({ id: 1318,
-         url: 'http://www.hiway.com/',
-         tstamp: '19961222133514',
+         url: 'http://yahoo.com/',
+         tstamp: '19981206224454',
          title: 'Systems',
          generator: '',
          score: 84,
