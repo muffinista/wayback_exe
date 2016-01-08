@@ -59,12 +59,8 @@ var getAndMarkRandom = function(cb) {
             "SELECT host FROM pages WHERE posted_at IS NOT NULL ORDER by posted_at DESC LIMIT 50", 
             function(err, rows, fields) {
                 var hosts = lodash.map(rows, function(x) { return x.host; });
-
-                console.log("skip hosts");
-                console.log(hosts);
                 
                 var q = "SELECT * FROM pages WHERE posted_at IS NULL AND approved_at IS NOT NULL AND host NOT IN (?) ORDER BY RAND() LIMIT 1";
-                
                 
                 connection.query({ sql:q, values: [ hosts ] },
                                  function(err, rows, fields) {

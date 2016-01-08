@@ -119,13 +119,11 @@ var render = function(p, cb) {
             page.open(url, function (status) {
                 console.log("status? ", status);
 
-                console.log(page.content);
-
-                if ( true || page.content.match(/504 Gateway/) ) {
+                /*if ( page.content.match(/504 Gateway/) ) {
                     ph.exit();
                     cb();
                     return;
-                }
+                }*/
 
                 // set the size of the browser to be the size of the interior of the frame
                 if ( p.wrap !== "undefined" && p.wrap === true ) {
