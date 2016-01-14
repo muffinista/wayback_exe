@@ -18,12 +18,13 @@ var phantomActions = function() {
     }
 
 // WM sets 'min-width:800px !important;' on the body, let's try and remove it
-    var styles = Array.prototype.slice.call(document.getElementsByTagName("style"));
-    styles.forEach(function(f) {
+    var styles = document.getElementsByTagName("style");
+    for ( var i = 0; i < styles.length; i++ ) {
+	var f = styles[i];
 	if ( f && f.innerHTML.lastIndexOf("min-width:800px !important;") !== -1 ) {
 	    f.remove();
 	}
-    });
+    };
     
     // try and close WM js on any frames
     var list = Array.prototype.slice.call( document.getElementsByTagName("frame") );
@@ -33,12 +34,13 @@ var phantomActions = function() {
         }
 
 	if ( f && f.contentWindow && f.contentWindow.document ) {
-	    var styles = Array.prototype.slice.call(f.contentWindow.document.getElementsByTagName("style"));
-	    styles.forEach(function(f) {
-		if ( f && f.innerHTML.lastIndexOf("min-width:800px !important;") !== -1 ) {
-		    f.remove();
+	    var styles = f.contentWindow.document.getElementsByTagName("style");
+	    for( var i = 0; i < styles.length; i++ ) {
+		var x = styles[i];
+		if ( x && x.innerHTML.lastIndexOf("min-width:800px !important;") !== -1 ) {
+		    x.remove();
 		}
-	    });
+	    }
 	}
     });
 
