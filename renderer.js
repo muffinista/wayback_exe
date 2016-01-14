@@ -17,12 +17,29 @@ var phantomActions = function() {
         __wm.h();
     }
 
+// WM sets 'min-width:800px !important;' on the body, let's try and remove it
+    var styles = Array.prototype.slice.call(document.getElementsByTagName("style"));
+    styles.forEach(function(f) {
+	if ( f && f.innerHTML.lastIndexOf("min-width:800px !important;") !== -1 ) {
+	    f.remove();
+	}
+    });
+    
     // try and close WM js on any frames
     var list = Array.prototype.slice.call( document.getElementsByTagName("frame") );
     list.forEach(function(f) {
         if ( f && f.contentWindow && f.contentWindow.__wm ) {
             f.contentWindow.__wm.h();
         }
+
+	if ( f && f.contentWindow && f.contentWindow.document ) {
+	    var styles = Array.prototype.slice.call(f.contentWindow.document.getElementsByTagName("style"));
+	    styles.forEach(function(f) {
+		if ( f && f.innerHTML.lastIndexOf("min-width:800px !important;") !== -1 ) {
+		    f.remove();
+		}
+	    });
+	}
     });
 
 
@@ -172,7 +189,8 @@ var render = function(p, cb) {
 
 
 exports.render = render;
-/**
+
+/*
 render({ id: 1318,
          wrap: true,
          url: 'http://www.mcs.com/~nr706/home.html',
