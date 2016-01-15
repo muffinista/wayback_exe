@@ -17,14 +17,13 @@ var phantomActions = function() {
         __wm.h();
     }
 
-// WM sets 'min-width:800px !important;' on the body, let's try and remove it
-    var styles = document.getElementsByTagName("style");
-    for ( var i = 0; i < styles.length; i++ ) {
-	var f = styles[i];
-	if ( f && f.innerHTML.lastIndexOf("min-width:800px !important;") !== -1 ) {
-	    f.remove();
-	}
-    };
+    // WM sets 'min-width:800px !important;' on the body, let's try and remove it
+    // http://stackoverflow.com/questions/33135966/phantomjs-remove-script-tags-from-html-snapshot-except-jsonld
+    Array.prototype.slice.call(document.getElementsByTagName("style")).filter(function(style) {
+	style.innerHTML.lastIndexOf("min-width:800px !important;") !== -1
+    }).forEach(function(style) {
+	style.parentNode.removeChild(style);
+    });
     
     // try and close WM js on any frames
     var list = Array.prototype.slice.call( document.getElementsByTagName("frame") );
@@ -34,13 +33,11 @@ var phantomActions = function() {
         }
 
 	if ( f && f.contentWindow && f.contentWindow.document ) {
-	    var styles = f.contentWindow.document.getElementsByTagName("style");
-	    for( var i = 0; i < styles.length; i++ ) {
-		var x = styles[i];
-		if ( x && x.innerHTML.lastIndexOf("min-width:800px !important;") !== -1 ) {
-		    x.remove();
-		}
-	    }
+	    Array.prototype.slice.call(f.contentWindow.document.getElementsByTagName("style")).filter(function(style) {
+		style.innerHTML.lastIndexOf("min-width:800px !important;") !== -1
+	    }).forEach(function(style) {
+		style.parentNode.removeChild(style);
+	    });
 	}
     });
 
