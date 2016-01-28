@@ -145,37 +145,41 @@ var render = function(p, cb) {
                     return;
                 }*/
 
-                // set the size of the browser to be the size of the interior of the frame
-                if ( p.wrap !== "undefined" && p.wrap === true ) {
-                    viewportOpts.width = frame.w;
-                    viewportOpts.height = frame.h;
-                }
-                else {
-                    console.log("no frame so use default viewport");
-                }
+                // wait for 10 seconds before actually rendering, which might help with
+                // some http redirects/etc
+                setTimeout(function() {
+                    // set the size of the browser to be the size of the interior of the frame
+                    if ( p.wrap !== "undefined" && p.wrap === true ) {
+                        viewportOpts.width = frame.w;
+                        viewportOpts.height = frame.h;
+                    }
+                    else {
+                        console.log("no frame so use default viewport");
+                    }
 
-                page.set('viewportSize', viewportOpts);
-                page.set('clipRect', viewportOpts);
+                    page.set('viewportSize', viewportOpts);
+                    page.set('clipRect', viewportOpts);
 
-                page.evaluate(phantomActions, function() {
+                    page.evaluate(phantomActions, function() {
+                        
+                        var guts = temp.path({prefix: 'page', suffix: '.png'});
+                        page.render(guts, function() {
+                            var dest;
+                            if ( p.wrap !== "undefined" && p.wrap === true ) {
+                                dest = wrap(guts, p, frame);
+                            }
+                            else {
+                                dest = guts;
+                            }
+                            
+                            console.log(dest);
+                            ph.exit();
 
-                    var guts = temp.path({prefix: 'page', suffix: '.png'});
-                    page.render(guts, function() {
-                        var dest;
-                        if ( p.wrap !== "undefined" && p.wrap === true ) {
-                            dest = wrap(guts, p, frame);
-                        }
-                        else {
-                            dest = guts;
-                        }
+                            cb(dest);                      
+                        }); // render
+                    }); // evaluate
+                }, 10000); // setTimeout
 
-                        console.log(dest);
-                        ph.exit();
-
-                        cb(dest);
-                       
-                    }); // render
-                }); // evaluate
             }); // open
 
         });
