@@ -12,7 +12,7 @@ var pool = mysql.createPool(conf.mysql);
  */
 var add = function(opts) {
     pool.getConnection(function(err, connection) {
-        console.log("store: " + opts.url);
+        //console.log("store: " + opts.url);
         connection.query(
             {
                 sql:'SELECT COUNT(*) AS tally FROM pages WHERE url = ?', 
@@ -40,8 +40,8 @@ var add = function(opts) {
                         created_at: new Date(),
                         approved_at: opts.approved_at
                     }, function(err, result) {
-                        console.log(err);
-                        console.log(result);
+                        //console.log(err);
+                        //console.log(result);
                     });
                     
                 }

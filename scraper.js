@@ -18,6 +18,9 @@ var pages = require('./pages.js');
 var wordfilter = require('wordfilter');
 wordfilter.addWords(['nude', 'naked', 'xxx', 'porn', 'murder']);
 
+var add_new_urls = false;
+
+var scrape_rate = 5000;
 
 /**
  * run without checking if a page has aleady been scraped
@@ -33,7 +36,7 @@ var alwaysRun = function(val) {
  */
 var scrapeUrl = function(url, timestamp, cb, onError) {
     var target = "http://web.archive.org/web/" + timestamp + "/" + url;
-    console.log(target);
+    //console.log(target);
     request(target, function (error, response, body) {
         if ( error || response.statusCode !== 200 ) {
             //console.log("ERR: " + error);
@@ -149,11 +152,14 @@ var findRedirect = function(c) {
     else if ( meta.length > 0 ) {
         //console.log("**** " + meta.get(0).attribs.content);
         //console.log("**** " + meta.get(0).attribs.content.split(/; *url=/i)[1]);
-        result =  meta.get(0).attribs.content.split(/; *url=/i);
-        if ( typeof(result) === 'object' && result.length > 1 ) {
-            var dest = result[1].replace(re, "");
-            return dest;
-        }
+        result =  meta.get(0).attribs;
+	if (typeof(result) !== "undefined") {
+	    result = result.content.split(/; *url=/i);
+            if ( typeof(result) === 'object' && result.length > 1 ) {
+		var dest = result[1].replace(re, "");
+		return dest;
+            }
+	}
         result = undefined; // tmp hack
     }
 
@@ -217,11 +223,13 @@ var scrape = function(u) {
 
             if ( page_score > min_score ) {
                 //console.log("score: " + page_score + " looks good, let's store it");
-                var urls = urlsToScrape(body, u);
 
-                if ( urls.length > 0 ) {
-                    queue.add(urls);
-                }
+		if ( add_new_urls == true ) {
+		    var urls = urlsToScrape(body, u);
+                    if ( urls.length > 0 ) {
+			queue.add(urls);
+                    }
+		}
 
                 //
                 // we'll auto-approve pages that don't have bad words on them
@@ -238,23 +246,23 @@ var scrape = function(u) {
                     approved_at = new Date();
                 }
 
-		            if ( u.indexOf("yahoo.com") === -1 ) {
+		if ( u.indexOf("yahoo.com") === -1 ) {
                     var h = url.parse(u).host;
                     pages.add({
-			                  url: u,
+			url: u,
                         host: h,
-			                  body: body,
-			                  score: page_score,
-			                  tstamp: tstamp,
-			                  title: attrs.title,
-			                  generator: attrs.generator,
+			body: body,
+			score: page_score,
+			tstamp: tstamp,
+			title: attrs.title,
+			generator: attrs.generator,
                         content: body,
                         approved_at: approved_at
                     });
-		            }
-		            else {
-		                //console.log("we will scrape yahoo pages but not store them in mysql");
-		            }
+		}
+		else {
+		    //console.log("we will scrape yahoo pages but not store them in mysql");
+		}
             }
             else {
                 //console.log("this page wasn't cool enough, sorry :(");
@@ -285,8 +293,9 @@ var loop = function() {
     console.log("ok, running forever!");
     var q = require('./queue.js');
     setInterval(function() {
+	console.log("*");
         run();
-    }, 10000);
+    }, scrape_rate);
 };
 
 
