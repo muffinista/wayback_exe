@@ -65,10 +65,12 @@ var render = function(p, cb) {
 
   var dest = temp.path({prefix: 'results', suffix: '.png'});
 
-  var guts = "tmp/foo.png";
-  var cmd = `run -v /Users/colin/Projects/wayback_exe/tmp:/tmp --rm wayback-exe --url https://web.archive.org/web/19970210193000/http://www.ecst.csuchico.edu/\~pizza/ --width ${frame.w} --height ${frame.h} --out /${guts}`;
+  var fname = temp.path({suffix:'.png', dir:'.'})    
+  var guts = "tmp/" + fname;
+  var pwd = path.dirname(__filename);
+  var cmd = `run -v ${pwd}/tmp:/tmp --rm wayback-exe --url ${url} --width ${frame.w} --height ${frame.h} --out /${guts}`;
   
-  //console.log(cmd);
+  console.log(cmd);
   exec('docker', cmd.split(' '));
   
   if ( p.wrap !== "undefined" && p.wrap === true ) {
