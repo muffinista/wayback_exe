@@ -17,3 +17,8 @@ ALTER TABLE pages ADD COLUMN host varchar(100) NULL;
 ALTER TABLE pages ADD COLUMN approved_at DATETIME NULL;
 
 create index approved_at on pages(approved_at);
+
+
+alter table pages add column random_key int(11) not null default 0;
+update pages set random_key = 10000 * rand() where 1;
+create index lookup on pages(posted_at, approved_at, host, random_key);

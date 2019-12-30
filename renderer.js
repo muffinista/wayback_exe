@@ -1,5 +1,4 @@
 var _ = require('lodash');
-var phantom = require('phantom');
 var temp = require('temp');
 var fs = require('fs');
 
@@ -20,7 +19,7 @@ var viewportOpts = {
 var wrap = function(src, p, frame) {
 
   var pointsize = frame["caption-font-size"] || 14;
-  var caption_bgcolor = frame["caption-bgcolor"] || "white";
+  // var caption_bgcolor = frame["caption-bgcolor"] || "white";
   
   var text = temp.path({prefix:'text', suffix:'.png'});
   var command = [
@@ -32,24 +31,21 @@ var wrap = function(src, p, frame) {
     text
   ];
   
-  
   var dest = temp.path({prefix: 'results', suffix: '.png'});
-  console.log(command.join(' '));
+  // console.log('convert', command.join(' '));
+
   exec('convert', command);                        
   
   command = [ src, 'images/' + frame.name,
               '-geometry', '+' + frame.x + '+' + frame.y, 
               dest];
-  console.log(command.join(' '));
   
   exec('composite', command);
-  
-  
+    
   if ( frame['caption-x']) {
     command = [ text, dest,
                 '-geometry', '+' + (frame['caption-x'] + 3) + '+' + (frame['caption-y'] + 3), 
                 dest];
-    console.log(command.join(' '));
     
     exec('composite', command);
   }
@@ -58,30 +54,32 @@ var wrap = function(src, p, frame) {
 
 };
 
-var render = function(p, cb) {
+const grabber = require('./screengrab.js');
+
+var render = async function(p, cb) {
   var frame = _.sample(frames);
   var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
   console.log(url);
 
   var dest = temp.path({prefix: 'results', suffix: '.png'});
+  // var fname = temp.path({suffix:'.png', dir:'.'})    
+  // var guts = "tmp/" + fname;
+  // var pwd = path.dirname(__filename);
 
-  var fname = temp.path({suffix:'.png', dir:'.'})    
-  var guts = "tmp/" + fname;
-  var pwd = path.dirname(__filename);
-  var cmd = `run -v ${pwd}/tmp:/tmp --rm wayback-exe --url ${url} --width ${frame.w} --height ${frame.h} --out /${guts}`;
-  
-  console.log(cmd);
-  exec('docker', cmd.split(' '));
-  
+  await grabber.render({
+    url: url, width: frame.w, height: frame.h, out: dest
+  });
+  //.then(() => {
+
   if ( p.wrap !== "undefined" && p.wrap === true ) {
-    dest = wrap(guts, p, frame);
+    dest = wrap(dest, p, frame);
   }
   else {
     dest = guts;
   }
                             
-  cb(dest);                      
-
+  cb(dest);
+  //});
 };
 
 exports.render = render;

@@ -11,13 +11,13 @@
     "moment": ">= 2.10.6",
     "mysql": ">= 2.9.0",
     "redis": ">= 2.0.1",
-    "request": "2.58.0",
+    "request": "2.88.0",
     "temp": ">= 0.8.3",
     "tumblrwks": ">= 0.2.0",
-    "twit": "2.1.0",
+    "twit": "2.2.11",
     "wordfilter": ">= 0.2.4",
     "puppeteer": "^1.0.0",
-    "yargs": "^8.0.2"
+    "yargs": "^13.2.4"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
