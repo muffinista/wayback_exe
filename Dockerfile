@@ -60,5 +60,5 @@ WORKDIR $APP_HOME
 RUN npm install
 ADD . /app
 
-ENV DEBUG="puppeteer:*"
+#ENV DEBUG="puppeteer:*"
 ENTRYPOINT ["node", "bot.js"]

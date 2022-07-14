@@ -6,6 +6,7 @@
   "dependencies": {
     "cheerio": "^0.22.0",
     "lodash": "^4.17.11",
+    "masto": "^4.4.0",
     "minimist": ">= 1.2.0",
     "moment": "^2.24.0",
     "mysql2": "^2.3.3",

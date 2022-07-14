@@ -6,7 +6,7 @@ var Twit = require('twit');
 
 var conf = JSON.parse(fs.readFileSync('conf.json'));
 
-var Masto = require('mastodon');
+const Masto = require('masto');
 
 var pages = require('./pages.js');
 var renderer = require('./renderer.js');
@@ -76,7 +76,12 @@ var tootPage = async function(p, dest) {
     return;
   }
 
-  var M = new Masto(conf.mastodon);
+    const masto = await Masto.login({
+	url: 'https://botsin.space',
+	accessToken: conf.mastodon.access_token,
+    });
+
+//  var M = new Masto(conf.mastodon);
 
   var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
   var title = p.title;
@@ -95,22 +100,19 @@ var tootPage = async function(p, dest) {
   var oldweb_url = "http://oldweb.today/random/" + p.tstamp + "/" + p.url;
   tweetText = tweetText + "\n" + oldweb_url;
   
-  var imgContent = fs.readFileSync(dest, { encoding: 'base64' });
-  
-  const resp = await M.post('media', { file: imgContent });
+    const attachment = await masto.mediaAttachments.create({
+	file: fs.createReadStream(dest),
+	description: `A screengrab of ${p.url}`
 
-  // now we can reference the media and post a tweet (media will attach to the tweet) 
-  var mediaIdStr = resp.data.id;
-  var params = {
-    status: tweetText,
-    media_ids: [ mediaIdStr ]
-  };
-  
-  console.log(params);
-    
-  const response = await M.post('statuses', params);
-  //console.log(data);
-  console.log("done!");
+    });
+
+  const status = await masto.statuses.create({
+      status: tweetText,
+      visibility: 'unlisted',
+    mediaIds: [attachment.id],
+  });
+
+  console.log(status);
 };
 
 // send the page to tumblr
@@ -165,11 +167,11 @@ var renderPage = async function(p) {
         await Promise.all([
           tweetPage(p, dest),
           tootPage(p, dest),
-          postPageToTumblr(p, dest),
+//          postPageToTumblr(p, dest),
         ]);
       }
       catch(e) {
-        console.log("*****", e);l
+        console.log("*****", e);
       }
         
       process.exit();
