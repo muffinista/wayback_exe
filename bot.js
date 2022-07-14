@@ -5,9 +5,8 @@ var moment = require('moment');
 var Twit = require('twit');
 
 var conf = JSON.parse(fs.readFileSync('conf.json'));
-var T = new Twit(conf.twitter);
 
-var Tumblr = require('tumblrwks');
+var Masto = require('mastodon');
 
 var pages = require('./pages.js');
 var renderer = require('./renderer.js');
@@ -15,11 +14,14 @@ var renderer = require('./renderer.js');
 const DRY_RUN = (process.env.DRY_RUN === 'true');
 
 // send the page to twitter
-var tweetPage = async function(p, dest, cb) {
+var tweetPage = async function(p, dest) {
   if ( DRY_RUN ) {
     console.log("Dry run, exiting tweetPage!");
+    return;
   }
 
+  var T = new Twit(conf.twitter);
+  
   // it's 23 but i'm being safe
   var shortened_url_length = 24;
   
@@ -62,17 +64,63 @@ var tweetPage = async function(p, dest, cb) {
       //console.log(data);
       console.log("done!");
       console.log(err);
-      cb();
     }); // status/update
   }); // media/upload
   
 };
 
+// send the page to mastodon
+var tootPage = async function(p, dest) {
+  if ( DRY_RUN ) {
+    console.log("Dry run, exiting tootPage!");
+    return;
+  }
+
+  var M = new Masto(conf.mastodon);
+
+  var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
+  var title = p.title;
+
+  var date = moment(p.tstamp, "YYYYMMDDHHmmss").format("MMM YYYY");
+  
+  var tweetText = title + "\n" + date + "\n";
+  if ( typeof(p.generator) !== "undefined" &&
+       p.generator !== "" )
+  {
+    tweetText = tweetText + p.generator + "\n";
+  }
+  
+  tweetText = tweetText + url;
+  
+  var oldweb_url = "http://oldweb.today/random/" + p.tstamp + "/" + p.url;
+  tweetText = tweetText + "\n" + oldweb_url;
+  
+  var imgContent = fs.readFileSync(dest, { encoding: 'base64' });
+  
+  const resp = await M.post('media', { file: imgContent });
+
+  // now we can reference the media and post a tweet (media will attach to the tweet) 
+  var mediaIdStr = resp.data.id;
+  var params = {
+    status: tweetText,
+    media_ids: [ mediaIdStr ]
+  };
+  
+  console.log(params);
+    
+  const response = await M.post('statuses', params);
+  //console.log(data);
+  console.log("done!");
+};
+
 // send the page to tumblr
-var postPageToTumblr = async function(p, dest, cb) {
+var postPageToTumblr = async function(p, dest) {
   if ( DRY_RUN ) {
     console.log("Dry run, exiting postPageToTumblr!");
+    return;
   }
+
+  var Tumblr = require('tumblrwks');
 
   var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
   var oldweb_url = "http://oldweb.today/random/" + p.tstamp + "/" + p.url;
@@ -116,6 +164,7 @@ var renderPage = async function(p) {
       try {
         await Promise.all([
           tweetPage(p, dest),
+          tootPage(p, dest),
           postPageToTumblr(p, dest),
         ]);
       }
