@@ -103,10 +103,11 @@ var renderPage = function(p) {
         console.log("well, better luck next time i guess");
       }
       else {
-          tweetPage(p, dest, function() {
-              postPage(p, dest); 
-              process.exit();
-          });
+        process.exit();
+        /* tweetPage(p, dest, function() {
+         *     postPage(p, dest); 
+         *     process.exit();
+         * }); */
       }
     });
   }
@@ -115,19 +116,21 @@ var renderPage = function(p) {
   }
 };
   
-// renderPage({ 
-//     id: 1318,
-//     url: 'http://www.mcs.com/~nr706/home.html',
-//     tstamp: '19970521165416',
-//     title: 'Thomas Keith & Associates',
-//     generator: '',
-//     score: 84,
-//     created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
-//     posted_at: null
-//   }, true);
+renderPage({ 
+  id: 1318,
+  url: 'http://www.insurance-life.com/',
+  tstamp: '19961221011029',
+       //  url: 'http://www.mcs.com/~nr706/home.html',
+          //       tstamp: '19970521165416',
+          title: 'Thomas Keith & Associates',
+  generator: '',
+  score: 84,
+  created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
+  posted_at: null
+}, true);
 
 
 // make sure we exit at some point
-setTimeout(process.exit, 120 * 1000);
-pages.getAndMarkRandom(renderPage);
+//setTimeout(process.exit, 120 * 1000);
+//pages.getAndMarkRandom(renderPage);
   

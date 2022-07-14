@@ -32,8 +32,8 @@ var wrap = function(src, p, frame) {
   ];
   
   var dest = temp.path({prefix: 'results', suffix: '.png'});
-  // console.log('convert', command.join(' '));
 
+  console.log('convert', command.join(' '));
   exec('convert', command);                        
   
   command = [ src, 'images/' + frame.name,
