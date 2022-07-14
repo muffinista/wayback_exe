@@ -86,10 +86,14 @@ module.exports.render = async function(args) {
       l.click();
     }
 
-    l = await page.$('#donate_close_desktop');
-    if ( l !== undefined && l !== null ) {
-      l.click();
-    }
+      await sleep(2500);
+    await page.evaluate(async() => {
+      var f = document.querySelector('#donato');
+      if ( f !== undefined && f !== null ) {
+        f.parentNode.removeChild(f);
+      }
+    });
+      
 
     await page.evaluate(async() => {
       var f = document.querySelector('#wm-ipp-base');
