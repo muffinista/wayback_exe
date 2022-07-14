@@ -1,55 +1,44 @@
-const puppeteer = require('puppeteer')
-
-// const argv = require('yargs')
-// .example('$0 --url=https://example.com')
-// .option('url')
-// .option('width', {
-//   describe: 'Width of viewport'
-// })
-// .option('height', {
-//   describe: 'Height of viewport'
-// })
-// .option('out', {
-//   default: '-',
-//   describe: 'File path to save. If `-` specified, outputs to console in base64-encoded'
-// })
-// .option('delay', {
-//   describe: 'Delay to save screenshot after loading CSS. Milliseconds'
-// })
-// .option('css', {
-//   describe: 'Additional CSS URL to load'
-// })
-// .option('style', {
-//   describe: 'Additional style to apply to body'
-// })
-// .demandOption(['url'])
-// .argv
+const puppeteer = require('puppeteer');
+const NAV_TIMEOUT = 120000;
 
 
 const sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-module.exports.render = async function(args) {
+const render = async function(args) {
   const { url, out, delay, css, style, width, height } = args;
   console.log("hey", args);
 
   let valid = true;
   const browser = await puppeteer.launch({args: [
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
     '--no-sandbox',
     '--disable-setuid-sandbox'
   ]})
+
   const page = await browser.newPage()
+  console.log(page);
+
   if (width && height) {
     await page.setViewport({ width, height })
   }
+
   try {
-    await page.goto(url);
+    console.log(`visiting ${url}`);
+    await page.goto(url, {
+      waitUntil : 'networkidle0',
+      timeout: NAV_TIMEOUT
+    });
   }
   catch(err) {
     console.log(err);
   }
+  console.log('here');
+  
   if (css || style) {
+    console.log('applying style');
     await page.evaluate((css, style) => {
       if (css) {
         const head = document.head
@@ -65,6 +54,7 @@ module.exports.render = async function(args) {
   }
   
   if (delay) {
+    console.log(`sleep for ${delay}`);
     await sleep(delay)
   }
   
@@ -81,12 +71,14 @@ module.exports.render = async function(args) {
   }
   
   if ( valid === true ) {
+    console.log('valid page, lets cleanup');
     var l = await page.$('#wm-tb-close');
     if ( l !== undefined && l !== null ) {
       l.click();
     }
 
-      await sleep(2500);
+    await sleep(2500);
+
     await page.evaluate(async() => {
       var f = document.querySelector('#donato');
       if ( f !== undefined && f !== null ) {
@@ -158,7 +150,7 @@ module.exports.render = async function(args) {
           _nv = textnodes[i].textContent;
           
           // attempt to strip email addresses and phone numbers from output
-          _nv = _nv.replace(/[A-Za-z0-9_\-\.]+\@/g, '░░░░░@').
+          _NV = _nv.replace(/[A-Za-z0-9_\-\.]+\@/g, '░░░░░@').
           replace(/[\(\+]?\b[ 0-9\-\(\)+^'^"^<^>]{10,14}\b/g, function(m) { return m.replace(/[0-9]/g, "x"); });
           
           textnodes[i].textContent = _nv;
@@ -183,3 +175,54 @@ module.exports.render = async function(args) {
     console.log("BROWSER CLOSED");
     browser.close();    
 }
+
+
+module.exports.render = render;
+
+
+//
+// you can run this script directly to do some debugging
+// ie:
+// node ./screengrab.js --url https://web.archive.org/web/19961221011029/http://www.insurance-life.com/ --width 800 --height 600 -delay 0 --out foo.png
+//
+if (require.main === module) {
+  (async () => {
+    const argv = require('yargs')
+      .example('$0 --url=https://example.com')
+      .option('url')
+      .option('width', {
+        describe: 'Width of viewport'
+      })
+      .option('height', {
+        describe: 'Height of viewport'
+      })
+      .option('out', {
+        default: '-',
+        describe: 'File path to save. If `-` specified, outputs to console in base64-encoded'
+      })
+      .option('delay', {
+        default: 1000,
+        describe: 'Delay to save screenshot after loading CSS. Milliseconds'
+      })
+      .option('css', {
+        describe: 'Additional CSS URL to load'
+      })
+      .option('style', {
+        describe: 'Additional style to apply to body'
+      })
+      .demandOption(['url'])
+      .argv
+    
+    await render({
+      url: argv.url,
+      out: argv.out,
+      delay: argv.delay,
+      css: argv.css,
+      style: argv.style,
+      width: argv.width,
+      height: argv.height
+    });
+  })();
+ 
+}
+
