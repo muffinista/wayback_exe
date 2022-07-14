@@ -56,20 +56,16 @@ var wrap = function(src, p, frame) {
 
 const grabber = require('./screengrab.js');
 
-var render = async function(p, cb) {
+var render = async function(p) {
   var frame = _.sample(frames);
   var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
   console.log(url);
 
   var dest = temp.path({prefix: 'results', suffix: '.png'});
-  // var fname = temp.path({suffix:'.png', dir:'.'})    
-  // var guts = "tmp/" + fname;
-  // var pwd = path.dirname(__filename);
 
   await grabber.render({
     url: url, width: frame.w, height: frame.h, out: dest
   });
-  //.then(() => {
 
   if ( p.wrap !== "undefined" && p.wrap === true ) {
     dest = wrap(dest, p, frame);
@@ -78,8 +74,7 @@ var render = async function(p, cb) {
     dest = guts;
   }
                             
-  cb(dest);
-  //});
+  return dest;
 };
 
 exports.render = render;

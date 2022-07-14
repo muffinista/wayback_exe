@@ -1,5 +1,5 @@
 "use strict";
-var mysql = require('mysql');
+var mysql = require('mysql2/promise');
 
 var fs = require('fs');
 var conf = JSON.parse(fs.readFileSync('conf.json'));
@@ -7,9 +7,11 @@ var lodash = require('lodash');
 
 var pool = mysql.createPool(conf.mysql);
 
+const DRY_RUN = (process.env.DRY_RUN === 'true');
+
 /**
-* add a page to the database
-*/
+ * add a page to the database
+ */
 var add = function(opts) {
   pool.getConnection(function(err, connection) {
     //console.log("store: " + opts.url);
@@ -45,61 +47,52 @@ var add = function(opts) {
           });
           
         }
-      });
     });
-  };
+  });
+};
+
+/**
+ * Pick a random page from the database, and mark is as posted so we only render it at once.
+ * Using RAND() here is pretty awful but performance isn't much of an issue.
+ */
+var getAndMarkRandom = async function(cb) {
+  const connection = await pool.getConnection();
+  let [rows, fields] = await connection.query(
+    "SELECT host FROM pages WHERE posted_at IS NOT NULL ORDER by posted_at DESC LIMIT 50");
+
+  var hosts = lodash.map(rows, function(x) { return x.host; });
   
-  /**
-  * Pick a random page from the database, and mark is as posted so we only render it at once.
-  * Using RAND() here is pretty awful but performance isn't much of an issue.
-  */
-  var getAndMarkRandom = function(cb) {
-    pool.getConnection(function(err, connection) {
-      connection.query(
-        "SELECT host FROM pages WHERE posted_at IS NOT NULL ORDER by posted_at DESC LIMIT 50", 
-        function(err, rows, fields) {
-          var hosts = lodash.map(rows, function(x) { return x.host; });
-          
-          // tired of posts from this forum showing up all the time
-          hosts.push("forums.nj.com");
-          hosts.push("www.nj.com");
-          //  SELECT id FROM pages WHERE posted_at IS NULL AND approved_at IS NOT NULL and host not in ('yahoo.com') order by random_key limit 1;
-          var q = "SELECT * FROM pages WHERE posted_at IS NULL AND approved_at IS NOT NULL AND host NOT IN (?) ORDER BY random_key LIMIT 1"
-          //                var q = "SELECT * FROM pages WHERE posted_at IS NULL AND approved_at IS NOT NULL AND host NOT IN (?) ORDER BY RAND() LIMIT 1";
-          
-          connection.query({ sql:q, values: [ hosts ] },
-            function(err, rows, fields) {
-              if (err) throw err;
-              var result = rows[0];
-              
-              // execute callback now before marked as posted
-              // so that if something goes wrong, we preserve the page
-              cb(result);
-              
-              //console.log(result);
-              connection.query("UPDATE pages SET posted_at = NOW() WHERE id = " + result.id,
-              function(err, result) {
-                console.log(err);
-                console.log(result);
-              });
-              
-              
-            });
-            
-          });
-        });
-        
-      };
-      
-      var close = function() {
-        console.log("closing mysql pool!");
-        pool.end(function (err) {
-          // all connections in the pool have ended
-          console.log("MySQL pool closed");
-        });
-      };
-      
-      exports.add = add;
-      exports.getAndMarkRandom = getAndMarkRandom;
-      exports.close = close;
-      
+  // tired of posts from this forum showing up all the time
+  hosts.push("forums.nj.com");
+  hosts.push("www.nj.com");
+
+  var q = "SELECT * FROM pages WHERE posted_at IS NULL AND approved_at IS NOT NULL AND host NOT IN (?) ORDER BY random_key LIMIT 1"
+  
+  [rows, fields] = await connection.query({ sql:q, values: [ hosts ] });
+  var result = rows[0];
+                     
+  // execute callback now before marked as posted
+  // so that if something goes wrong, we preserve the page
+  await cb(result);
+                     
+  if ( DRY_RUN ) {
+    console.log(result);
+    console.log("dry run! not updating db");
+  }
+  else {
+    await connection.query("UPDATE pages SET posted_at = NOW() WHERE id = " + result.id);
+  }
+}; 
+
+
+var close = function() {
+  console.log("closing mysql pool!");
+  pool.end(function (err) {
+    // all connections in the pool have ended
+    console.log("MySQL pool closed");
+  });
+};
+
+exports.add = add;
+exports.getAndMarkRandom = getAndMarkRandom;
+exports.close = close;

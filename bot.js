@@ -12,8 +12,14 @@ var Tumblr = require('tumblrwks');
 var pages = require('./pages.js');
 var renderer = require('./renderer.js');
 
+const DRY_RUN = (process.env.DRY_RUN === 'true');
+
 // send the page to twitter
-var tweetPage = function(p, dest, cb) {
+var tweetPage = async function(p, dest, cb) {
+  if ( DRY_RUN ) {
+    console.log("Dry run, exiting tweetPage!");
+  }
+
   // it's 23 but i'm being safe
   var shortened_url_length = 24;
   
@@ -63,7 +69,11 @@ var tweetPage = function(p, dest, cb) {
 };
 
 // send the page to tumblr
-var postPage = function(p, dest, cb) {
+var postPageToTumblr = async function(p, dest, cb) {
+  if ( DRY_RUN ) {
+    console.log("Dry run, exiting postPageToTumblr!");
+  }
+
   var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
   var oldweb_url = "http://oldweb.today/random/" + p.tstamp + "/" + p.url;
   var tumblr = new Tumblr(conf.tumblr, conf.tumblr_url);
@@ -93,44 +103,56 @@ var postPage = function(p, dest, cb) {
 
 
 
-var renderPage = function(p) {
+var renderPage = async function(p) {
   try {
     // hacky fun to pass along an option which will wrap the output in a frame
     p.wrap = true;
     
-    renderer.render(p, function(dest) {
-      if ( typeof(dest) === "undefined" ) {
-        console.log("well, better luck next time i guess");
+    const dest = await renderer.render(p);
+    if ( typeof(dest) === "undefined" ) {
+      console.log("well, better luck next time i guess");
+    }
+    else {
+      try {
+        await Promise.all([
+          tweetPage(p, dest),
+          postPageToTumblr(p, dest),
+        ]);
       }
-      else {
-        process.exit();
-        /* tweetPage(p, dest, function() {
-         *     postPage(p, dest); 
-         *     process.exit();
-         * }); */
+      catch(e) {
+        console.log("*****", e);l
       }
-    });
-  }
-  catch(error) {
+        
+      process.exit();
+    }
+  } catch(error) {
     console.log(error);
   }
 };
-  
-renderPage({ 
-  id: 1318,
-  url: 'http://www.insurance-life.com/',
-  tstamp: '19961221011029',
-       //  url: 'http://www.mcs.com/~nr706/home.html',
-          //       tstamp: '19970521165416',
-          title: 'Thomas Keith & Associates',
-  generator: '',
-  score: 84,
-  created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
-  posted_at: null
-}, true);
+
+/**
+// you can test functionality with a little snippet like this
+(async () => {
+  await renderPage({ 
+    id: 1318,
+    url: 'http://www.insurance-life.com/',
+    tstamp: '19961221011029',
+    //  url: 'http://www.mcs.com/~nr706/home.html',
+    //       tstamp: '19970521165416',
+    title: 'Thomas Keith & Associates',
+    generator: '',
+    score: 84,
+    created_at: "Wed Oct 14 2015 22:24:43 GMT+0000 (UTC)",
+    posted_at: null
+  }, true);
+})();
+*/
 
 
 // make sure we exit at some point
-//setTimeout(process.exit, 120 * 1000);
-//pages.getAndMarkRandom(renderPage);
-  
+setTimeout(process.exit, 120 * 1000);
+(async () => {
+  pages.getAndMarkRandom(renderPage);
+})();
+
+
