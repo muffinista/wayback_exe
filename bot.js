@@ -81,8 +81,6 @@ var tootPage = async function(p, dest) {
 	accessToken: conf.mastodon.access_token,
     });
 
-//  var M = new Masto(conf.mastodon);
-
   var url = "https://web.archive.org/web/" + p.tstamp + "/" + p.url;
   var title = p.title;
 
@@ -102,8 +100,11 @@ var tootPage = async function(p, dest) {
   
     const attachment = await masto.mediaAttachments.create({
 	file: fs.createReadStream(dest),
-	description: `A screengrab of ${p.url}`
-
+	description: `A screengrab of ${p.url} from ${date}`,
+	focus: {
+	    x: 0.0,
+	    y: 1.0
+	}
     });
 
   const status = await masto.statuses.create({
