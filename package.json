@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "cheerio": "^0.22.0",
+    "cheerio": "^1.0.0-rc.12",
     "lodash": "^4.17.11",
     "masto": "^4.4.0",
     "minimist": ">= 1.2.0",
