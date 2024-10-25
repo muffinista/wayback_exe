@@ -1,6 +1,6 @@
-version: '3'
 services:
   bot:
+    # entrypoint: bash
     build: .
     networks:
       internal:
@@ -20,8 +20,6 @@ services:
       MYSQL_USER: wayback
       MYSQL_PASSWORD: 1234abcd
       MYSQL_ROOT_PASSWORD: root
-    networks:
-      - internal
     volumes:
       - ./db-data:/var/lib/mysql
 networks:
